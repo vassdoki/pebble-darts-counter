@@ -1,8 +1,8 @@
 {
   "uuid": "1de6e6cb-f2d4-47a7-be91-7077751acd32",
-  "shortName": "darts-counter",
-  "longName": "darts-counter",
-  "companyName": "MakeAwesomeHappen",
+  "shortName": "Doki Counter",
+  "longName": "Doki Darts Counter",
+  "companyName": "iMind",
   "versionCode": 1,
   "versionLabel": "1.0",
   "watchapp": {
