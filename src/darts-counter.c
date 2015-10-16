@@ -10,11 +10,13 @@ static TextLayer *text_points_togo;
 static int m1;
 static int m2;
 static char s_s1[32];
-static char s_points_sum[11];
-static char s_points_togo[11];
-static char s_game_round[11];
+static char s_points_sum[4];
+static char s_points_togo[4];
+static char s_game_round[12];
+static char s_game_throw[12];
 
 static int game_sum;
+static int game_throw;
 static int game_round;
 static int game_start;
 
@@ -56,13 +58,13 @@ static void refresh_number(int curr) {
   text_layer_set_text(text_layer_number, s_s1);
 }
 
-void set_text_layer_d(TextLayer *layer, char *s, char *format, int d) {
-  snprintf(s, 9, format, d);
+void set_text_layer_d(TextLayer *layer, char *s, int sizeofs, char *format, int d) {
+  snprintf(s, sizeofs, format, d);
   text_layer_set_text(layer, s);
 }
 
-static void set_text(char *s, char *format, int d) {
-  snprintf(s, 10, format, d);
+static void set_text(char *s, int sizeofs, char *format, int d) {
+  snprintf(s, sizeofs, format, d);
 }
 
 
@@ -125,10 +127,16 @@ static void select_button_up_handler(ClickRecognizerRef recognizer, void *contex
       text_layer_set_text(text_layer, "OK");
 
       game_sum += curr_number * curr_modifier;
-      game_round++;
-      set_text(s_points_sum,"%d", game_sum);
-      set_text(s_points_togo, "%d", game_start - game_sum);
-      set_text(s_game_round, "Round: %d", game_round);
+      set_text(s_points_sum, sizeof(s_points_sum), "%d", game_sum);
+      set_text(s_points_togo, sizeof(s_points_togo), "%d", game_start - game_sum);
+
+      game_throw = (game_throw + 1) % 3;
+      if (game_throw % 3 == 0) {
+        game_round++;
+      }
+
+      set_text(s_game_throw, sizeof(s_game_throw), "Throw: %d", game_throw + 1);
+      set_text(s_game_round, sizeof(s_game_round), "Round: %d", game_round);
 
       curr_number = 0;
       refresh_number(0);
@@ -187,7 +195,7 @@ static void window_load(Window *window) {
 
   text_points_sum = text_layer_create((GRect) { .origin = { 50, 2 }, .size = { 20, 20 } });
   layer_add_child(window_layer, text_layer_get_layer(text_points_sum));
-  set_text_layer_d(text_points_sum, s_points_sum,"%d", 0);
+  set_text_layer_d(text_points_sum, s_points_sum, sizeof(s_points_sum), "%d", 0);
 
   t_draw = text_layer_create((GRect) { .origin = { 70, 2 }, .size = { 50, 20 } });
   layer_add_child(window_layer, text_layer_get_layer(t_draw));
@@ -195,14 +203,15 @@ static void window_load(Window *window) {
 
   text_points_togo = text_layer_create((GRect) { .origin = { 120, 2 }, .size = { 20, 20 } });
   layer_add_child(window_layer, text_layer_get_layer(text_points_togo));
-  set_text_layer_d(text_points_togo, s_points_togo, "%d", 301);
+  set_text_layer_d(text_points_togo, s_points_togo, sizeof(s_points_togo), "%d", 301);
 
-  t_draw = text_layer_create((GRect) { .origin = { 2, 22 }, .size = { 120, 20 } });
+  t_draw = text_layer_create((GRect) { .origin = { 2, 22 }, .size = { 70, 20 } });
   layer_add_child(window_layer, text_layer_get_layer(t_draw));
-  //text_layer_set_text(t_draw, "Round: 0");
-  set_text_layer_d(t_draw, s_game_round, "Round: %d", game_round);
+  set_text_layer_d(t_draw, s_game_throw, sizeof(s_game_throw), "Throw: %d", game_throw + 1);
 
-
+  t_draw = text_layer_create((GRect) { .origin = { 72, 22 }, .size = { 70, 20 } });
+  layer_add_child(window_layer, text_layer_get_layer(t_draw));
+  set_text_layer_d(t_draw, s_game_round, sizeof(s_game_round), "Round: %d", game_round);
 }
 
 static void window_unload(Window *window) {
@@ -211,6 +220,8 @@ static void window_unload(Window *window) {
 
 static void init(void) {
   curr_number = 0;
+  game_throw = 0;
+  game_round = 0;
 
   window = window_create();
   window_set_click_config_provider(window, click_config_provider);
