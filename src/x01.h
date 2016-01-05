@@ -1,5 +1,6 @@
 #define NUM_OF_MAX_ROUNDS_IN_GAME 30
 #define MAX_NUM_OF_PLAYERS 4
+#define HISTORY_SIZE 4
 
 typedef struct {
   uint8_t number; // 0: missed, 1..20, 25: bull
@@ -25,3 +26,6 @@ typedef struct {
 
 
 void x01_window_push(Game *pgame);
+
+void show_window_ui(void);
+void hide_window_ui(void);

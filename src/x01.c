@@ -1,27 +1,37 @@
 #include <pebble.h>
 #include <x01.h>
 
-static Window *window;
-static TextLayer *text_layer;
-static TextLayer *text_layer_number;
 
-static TextLayer *text_points_sum;
-static TextLayer *text_points_togo;
+// BEGIN AUTO-GENERATED UI CODE; DO NOT MODIFY
+static Window *s_window;
+static GFont s_res_gothic_18_bold;
+static GFont s_res_gothic_28_bold;
+static GFont s_res_gothic_24_bold;
+static GFont s_res_gothic_18;
+static GFont s_res_gothic_14;
+static TextLayer *prev_round[HISTORY_SIZE];
+static TextLayer *curr_round_sum;
+static TextLayer *curr_round[3];
+static TextLayer *pl[4];
+static TextLayer *game_name;
+static TextLayer *game_round_label;
+static TextLayer *game_settings;
+static TextLayer *game_round_value;
+static TextLayer *middle_button_text;
 
 
+static char t_prev_round[HISTORY_SIZE][4];
+static char t_curr_round_sum[4];
+static char t_curr_round[3][4];
+static char t_pl[4][5];
+static char t_game_name[4];
+static char t_game_round_label[32];
+static char t_game_settings[32];
+static char t_game_round_value[4];
 
 
 static OneThrow currThrow;
 static Game *game;
-
-static int m1;
-static int m2;
-static char s_s1[32];
-static char s_points_sum[32];
-static char s_points_togo[32];
-static char s_game_round[12];
-static char s_game_throw[12];
-static char s_game_player[12];
 
 static AppTimer *up_button_timer;
 static AppTimer *down_button_timer;
@@ -48,14 +58,20 @@ static void vibes_veryshort_number(int count) {
   }
 }
 
-static void refresh_number(int curr) {
-  currThrow.number += curr;
+static void refresh_number() {
+  uint8_t throwNum = game->players[game->currentPlayer].currentThrow;
+
   if (currThrow.number > 20) {
     currThrow.number = 25;
-    text_layer_set_text(text_layer, "BULL");
+    strcpy(t_curr_round[throwNum], " BU");
+  } else {
+    snprintf(t_curr_round[throwNum], sizeof(t_curr_round[throwNum]), " %d", currThrow.number);
   }
-  snprintf(s_s1, sizeof(s_s1), "%d (%d)", currThrow.number, curr);
-  text_layer_set_text(text_layer_number, s_s1);
+  switch(currThrow.modifier) {
+    case 2: t_curr_round[throwNum][0] = 'd'; break;
+    case 3: t_curr_round[throwNum][0] = 't'; break;
+  }
+  text_layer_set_text(curr_round[throwNum], t_curr_round[throwNum]);
 }
 
 void set_text_layer_d(TextLayer *layer, char *s, int sizeofs, char *format, int d) {
@@ -74,34 +90,38 @@ static void set_text4(char *s, int sizeofs, char *format, int d1, int d2, int d3
 
 // UP BUTTON
 static void up_button_timer_callback(void *data) {
-  refresh_number(5);
+  currThrow.number += 5;
+  refresh_number();
   vibes_veryshort_pulse();
   up_button_timer = app_timer_register(500, up_button_timer_callback, NULL);
 }
 static void up_button_down_handler(ClickRecognizerRef recognizer, void *context) {
-  refresh_number(5);
+  currThrow.number += 5;
+  refresh_number();
   vibes_veryshort_pulse();
   up_button_timer = app_timer_register(500, up_button_timer_callback, NULL);
 }
 static void up_button_up_handler(ClickRecognizerRef recognizer, void *context) {
   app_timer_cancel(up_button_timer);
-  text_layer_set_text(text_layer, "Up: +5");
+  //text_layer_set_text(text_layer, "Up: +5");
 }
 
 // DOWN BUTTON
 static void down_button_timer_callback(void *data) {
-  refresh_number(1);
+  currThrow.number += 1;
+  refresh_number();
   vibes_veryshort_pulse();
   down_button_timer = app_timer_register(500, down_button_timer_callback, NULL);
 }
 static void down_button_down_handler(ClickRecognizerRef recognizer, void *context) {
-  refresh_number(1);
+  currThrow.number += 1;
+  refresh_number();
   vibes_veryshort_pulse();
   down_button_timer = app_timer_register(500, down_button_timer_callback, NULL);
 }
 static void down_button_up_handler(ClickRecognizerRef recognizer, void *context) {
   app_timer_cancel(down_button_timer);
-  text_layer_set_text(text_layer, "Down: +1");
+  //text_layer_set_text(text_layer, "Down: +1");
 }
 
 
@@ -113,14 +133,14 @@ static void select_button_timer_callback(void *data) {
     select_button_timer = app_timer_register(500, select_button_timer_callback, NULL);
   }
   switch(select_state) {
-    case 1: text_layer_set_text(text_layer, "DOUBLE"); break;
-    case 2: text_layer_set_text(text_layer, "TRIPLE"); break;
-    case 3: text_layer_set_text(text_layer, "CANCEL"); break;
+    case 1: text_layer_set_text(middle_button_text, "DOUBLE"); break;
+    case 2: text_layer_set_text(middle_button_text, "TRIPLE"); break;
+    case 3: text_layer_set_text(middle_button_text, "CANCEL"); break;
   }
 }
 static void select_button_down_handler(ClickRecognizerRef recognizer, void *context) {
   select_state = 0;
-  text_layer_set_text(text_layer, "up down");
+  //text_layer_set_text(text_layer, "up down");
   select_button_timer = app_timer_register(500, select_button_timer_callback, NULL);
 }
 static void select_button_up_handler(ClickRecognizerRef recognizer, void *context) {
@@ -128,9 +148,19 @@ static void select_button_up_handler(ClickRecognizerRef recognizer, void *contex
   app_timer_cancel(select_button_timer);
   switch(select_state) {
     case 0:
-      text_layer_set_text(text_layer, "OK");
+      // OK pressed
 
       currentPlayer = &game->players[game->currentPlayer];
+
+      if (game->currentPlayer == 0 && currentPlayer->currentThrow == 0 && currThrow.number == 0) {
+        // this is the first button up for the ok button, we just got to this window and received
+        // the event from the previous window
+        // just ignore it
+        break;
+      }
+
+      text_layer_set_text(middle_button_text, "");
+
       currentPlayer->throws[game->currentRound][currentPlayer->currentThrow].number = currThrow.number;
       currentPlayer->throws[game->currentRound][currentPlayer->currentThrow].modifier = currThrow.modifier;
       currentPlayer->thrownSum += currThrow.number * currThrow.modifier;
@@ -140,44 +170,69 @@ static void select_button_up_handler(ClickRecognizerRef recognizer, void *contex
       currentPlayer->currentThrow = (currentPlayer->currentThrow + 1) % 3;
       APP_LOG(APP_LOG_LEVEL_DEBUG, "currentThrow: %d", currentPlayer->currentThrow);
       if (currentPlayer->currentThrow % 3 == 0) {
+        // next player
+        text_layer_set_background_color(pl[game->currentPlayer], GColorBlack);
+        text_layer_set_text_color(pl[game->currentPlayer], GColorWhite);
+        set_text_layer_d(pl[game->currentPlayer], t_pl[game->currentPlayer], sizeof(t_pl[game->currentPlayer]), "%d", game->goalNumber - game->players[game->currentPlayer].thrownSum);
+
         game->currentPlayer = (game->currentPlayer + 1) % game->numOfPlayers;
         APP_LOG(APP_LOG_LEVEL_DEBUG, "currentPlayer: %d", game->currentPlayer);
+
+        text_layer_set_background_color(pl[game->currentPlayer], GColorWhite);
+        text_layer_set_text_color(pl[game->currentPlayer], GColorBlack);
+
         if (game->currentPlayer == 0) {
+          // next round
           game->currentRound++;
         }
+
+        currentPlayer = &game->players[game->currentPlayer];
+        // before the first throw, clear out the bottom part
+        for(int i = 0; i < 3; i++) {
+          set_text_layer_d(curr_round[i], t_curr_round[i], sizeof(t_curr_round[i]), "", 0);
+        }
+
+        int histCount = 0;
+        for(int i = game->currentRound -1; i >= 0 && histCount < HISTORY_SIZE; i--) {
+          int sum = 0;
+          for(int x = 0; x < 3; x++) {
+            sum += currentPlayer->throws[i][x].number * currentPlayer->throws[i][x].modifier;
+          }
+          set_text_layer_d(prev_round[histCount], t_prev_round[histCount], sizeof(t_prev_round[histCount]), "%d", sum);
+          histCount++;
+        }
+
       }
 
-      set_text(s_game_throw, sizeof(s_game_throw), "Throw: %d", currentPlayer->currentThrow + 1);
-      set_text(s_game_round, sizeof(s_game_round), "Round: %d", game->currentRound + 1);
-      set_text(s_game_player, sizeof(s_game_player), "Player: %d", game->currentPlayer + 1);
-      set_text4(s_points_sum, sizeof(s_points_sum), "P: [%03d] [%03d] [%03d] [%03d]"
-          , game->players[0].thrownSum
-          , game->players[1].thrownSum
-          , game->players[2].thrownSum
-          , game->players[3].thrownSum);
-      set_text4(s_points_togo, sizeof(s_points_togo), "G: [%03d] [%03d] [%03d] [%03d]"
-          , game->goalNumber - game->players[0].thrownSum
-          , game->goalNumber - game->players[1].thrownSum
-          , game->goalNumber - game->players[2].thrownSum
-          , game->goalNumber - game->players[3].thrownSum);
+      //set_text(s_game_throw, sizeof(s_game_throw), "Throw: %d", currentPlayer->currentThrow + 1);
+      set_text_layer_d(game_round_value, t_game_round_value, sizeof(t_game_round_value), "%d", game->currentRound + 1);
+
+      currentPlayer = &game->players[game->currentPlayer];
+      set_text_layer_d(curr_round[currentPlayer->currentThrow],
+        t_curr_round[currentPlayer->currentThrow],
+        sizeof(t_curr_round[currentPlayer->currentThrow]), "%d", 0);
+
+      //set_text(s_game_player, sizeof(s_game_player), "Player: %d", game->currentPlayer + 1);
 
       currThrow.number = 0;
-      refresh_number(0);
       currThrow.modifier = 1;
+      //refresh_number();
       break;
     case 1:
-      text_layer_set_text(text_layer, "DOUBLE");
+      //text_layer_set_text(text_layer, "DOUBLE");
       currThrow.modifier = 2;
+      refresh_number();
       break;
     case 2:
-      text_layer_set_text(text_layer, "TRIPLE");
+      //text_layer_set_text(text_layer, "TRIPLE");
       currThrow.modifier = 3;
+      refresh_number();
       break;
     case 3:
-      text_layer_set_text(text_layer, "CANCEL");
+      //text_layer_set_text(text_layer, "CANCEL");
       currThrow.modifier = 1;
       currThrow.number = 0;
-      refresh_number(0);
+      refresh_number();
       break;
   }
 }
@@ -192,7 +247,7 @@ static void click_config_provider(void *context) {
   window_raw_click_subscribe(BUTTON_ID_SELECT, select_button_down_handler, select_button_up_handler, NULL);
 }
 
-static void window_load(Window *window) {
+static void reset_game() {
   APP_LOG(APP_LOG_LEVEL_DEBUG, "window_load, reset game data ------");
   game->currentPlayer = 0;
   game->currentRound = 0;
@@ -201,46 +256,194 @@ static void window_load(Window *window) {
     game->players[i].currentThrow = 0;
     game->players[i].thrownSum = 0;
     memset(game->players[i].throws, 0, NUM_OF_MAX_ROUNDS_IN_GAME * 3 * sizeof(OneThrow));
+
+    set_text_layer_d(pl[i], t_pl[i], sizeof(t_pl[i]), "%d", game->goalNumber);
   }
+  set_text_layer_d(curr_round[0], t_curr_round[0], sizeof(t_curr_round[0]), "%d", 0);
+
   currThrow.modifier = 1;
-
-  Layer *window_layer = window_get_root_layer(window);
-  GRect bounds = layer_get_bounds(window_layer);
-
-  text_layer = text_layer_create((GRect) { .origin = { 0, 92 }, .size = { bounds.size.w, 20 } });
-  text_layer_set_text(text_layer, "Press a button");
-  text_layer_set_text_alignment(text_layer, GTextAlignmentCenter);
-  layer_add_child(window_layer, text_layer_get_layer(text_layer));
-
-  text_layer_number = text_layer_create((GRect) { .origin = { 2, 114 }, .size = { bounds.size.w - 4, 20 } });
-  layer_add_child(window_layer, text_layer_get_layer(text_layer_number));
-
-  TextLayer *t_draw;
-
-  t_draw = text_layer_create((GRect) { .origin = { 2, 2 }, .size = { 70, 20 } });
-  layer_add_child(window_layer, text_layer_get_layer(t_draw));
-  set_text_layer_d(t_draw, s_game_player, sizeof(s_game_player), "Player: %d", 1);
-
-  t_draw = text_layer_create((GRect) { .origin = { 2, 22 }, .size = { 70, 20 } });
-  layer_add_child(window_layer, text_layer_get_layer(t_draw));
-  set_text_layer_d(t_draw, s_game_throw, sizeof(s_game_throw), "Throw: %d", 1);
-
-  t_draw = text_layer_create((GRect) { .origin = { 72, 22 }, .size = { 70, 20 } });
-  layer_add_child(window_layer, text_layer_get_layer(t_draw));
-  set_text_layer_d(t_draw, s_game_round, sizeof(s_game_round), "Round: %d", 1);
-
-  t_draw = text_layer_create((GRect) { .origin = { 2, 42 }, .size = { 140, 20 } });
-  layer_add_child(window_layer, text_layer_get_layer(t_draw));
-  set_text_layer_d(t_draw, s_points_sum, sizeof(s_points_sum), "P: [---] [---] [---] [---]", 0);
-
-  t_draw = text_layer_create((GRect) { .origin = { 2, 62 }, .size = { 140, 20 } });
-  layer_add_child(window_layer, text_layer_get_layer(t_draw));
-  set_text_layer_d(t_draw, s_points_togo, sizeof(s_points_togo), "G: [---] [---] [---] [---]", 0);
 
 }
 
-static void window_unload(Window *window) {
-  text_layer_destroy(text_layer);
+static void initialise_ui(void) {
+  s_window = window_create();
+  window_set_background_color(s_window, GColorBlack);
+  #ifndef PBL_SDK_3
+    window_set_fullscreen(s_window, false);
+  #endif
+
+  s_res_gothic_18_bold = fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD);
+  s_res_gothic_28_bold = fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD);
+  s_res_gothic_24_bold = fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD);
+  s_res_gothic_18 = fonts_get_system_font(FONT_KEY_GOTHIC_18);
+  s_res_gothic_14 = fonts_get_system_font(FONT_KEY_GOTHIC_14);
+  // prev_round[3]
+  prev_round[3] = text_layer_create(GRect(2, 131, 25, 18));
+  text_layer_set_text(prev_round[3], "");
+  text_layer_set_text_alignment(prev_round[3], GTextAlignmentCenter);
+  text_layer_set_font(prev_round[3], s_res_gothic_18_bold);
+  layer_add_child(window_get_root_layer(s_window), (Layer *)prev_round[3]);
+
+  // prev_round[2]
+  prev_round[2] = text_layer_create(GRect(29, 131, 25, 18));
+  text_layer_set_text(prev_round[2], "");
+  text_layer_set_text_alignment(prev_round[2], GTextAlignmentCenter);
+  text_layer_set_font(prev_round[2], s_res_gothic_18_bold);
+  layer_add_child(window_get_root_layer(s_window), (Layer *)prev_round[2]);
+
+  // prev_round[1]
+  prev_round[1] = text_layer_create(GRect(56, 131, 25, 18));
+  text_layer_set_text(prev_round[1], "");
+  text_layer_set_text_alignment(prev_round[1], GTextAlignmentCenter);
+  text_layer_set_font(prev_round[1], s_res_gothic_18_bold);
+  layer_add_child(window_get_root_layer(s_window), (Layer *)prev_round[1]);
+
+  // prev_round[0]
+  prev_round[0] = text_layer_create(GRect(83, 131, 25, 18));
+  text_layer_set_text(prev_round[0], "");
+  text_layer_set_text_alignment(prev_round[0], GTextAlignmentCenter);
+  text_layer_set_font(prev_round[0], s_res_gothic_18_bold);
+  layer_add_child(window_get_root_layer(s_window), (Layer *)prev_round[0]);
+
+  // curr_round_sum
+  curr_round_sum = text_layer_create(GRect(110, 130, 32, 20));
+  text_layer_set_text(curr_round_sum, "");
+  text_layer_set_text_alignment(curr_round_sum, GTextAlignmentCenter);
+  text_layer_set_font(curr_round_sum, s_res_gothic_18_bold);
+  layer_add_child(window_get_root_layer(s_window), (Layer *)curr_round_sum);
+
+  // curr_round[0]
+  curr_round[0] = text_layer_create(GRect(2, 93, 45, 29));
+  text_layer_set_text(curr_round[0], "");
+  text_layer_set_text_alignment(curr_round[0], GTextAlignmentCenter);
+  text_layer_set_font(curr_round[0], s_res_gothic_28_bold);
+  layer_add_child(window_get_root_layer(s_window), (Layer *)curr_round[0]);
+
+  // curr_round[1]
+  curr_round[1] = text_layer_create(GRect(49, 93, 46, 29));
+  text_layer_set_text(curr_round[1], "");
+  text_layer_set_text_alignment(curr_round[1], GTextAlignmentCenter);
+  text_layer_set_font(curr_round[1], s_res_gothic_28_bold);
+  layer_add_child(window_get_root_layer(s_window), (Layer *)curr_round[1]);
+
+  // curr_round[2]
+  curr_round[2] = text_layer_create(GRect(97, 93, 45, 29));
+  text_layer_set_text(curr_round[2], "");
+  text_layer_set_text_alignment(curr_round[2], GTextAlignmentCenter);
+  text_layer_set_font(curr_round[2], s_res_gothic_28_bold);
+  layer_add_child(window_get_root_layer(s_window), (Layer *)curr_round[2]);
+
+  // pl[0]
+  pl[0] = text_layer_create(GRect(2, 65, 34, 28));
+  text_layer_set_background_color(pl[0], GColorWhite);
+  text_layer_set_text_color(pl[0], GColorBlack);
+  text_layer_set_text(pl[0], "");
+  text_layer_set_text_alignment(pl[0], GTextAlignmentCenter);
+  text_layer_set_font(pl[0], s_res_gothic_24_bold);
+  layer_add_child(window_get_root_layer(s_window), (Layer *)pl[0]);
+
+  // pl[1]
+  pl[1] = text_layer_create(GRect(37, 65, 35, 28));
+  text_layer_set_background_color(pl[1], GColorBlack);
+  text_layer_set_text_color(pl[1], GColorWhite);
+  text_layer_set_text(pl[1], "");
+  text_layer_set_text_alignment(pl[1], GTextAlignmentCenter);
+  text_layer_set_font(pl[1], s_res_gothic_24_bold);
+  layer_add_child(window_get_root_layer(s_window), (Layer *)pl[1]);
+
+  // pl[2]
+  pl[2] = text_layer_create(GRect(73, 65, 34, 28));
+  text_layer_set_background_color(pl[2], GColorBlack);
+  text_layer_set_text_color(pl[2], GColorWhite);
+  text_layer_set_text(pl[2], "");
+  text_layer_set_text_alignment(pl[2], GTextAlignmentCenter);
+  text_layer_set_font(pl[2], s_res_gothic_24_bold);
+  layer_add_child(window_get_root_layer(s_window), (Layer *)pl[2]);
+
+  // pl[3]
+  pl[3] = text_layer_create(GRect(108, 65, 34, 28));
+  text_layer_set_background_color(pl[3], GColorBlack);
+  text_layer_set_text_color(pl[3], GColorWhite);
+  text_layer_set_text(pl[3], "");
+  text_layer_set_text_alignment(pl[3], GTextAlignmentCenter);
+  text_layer_set_font(pl[3], s_res_gothic_24_bold);
+  layer_add_child(window_get_root_layer(s_window), (Layer *)pl[3]);
+
+  // game_name
+  game_name = text_layer_create(GRect(5, 4, 63, 20));
+  text_layer_set_background_color(game_name, GColorClear);
+  text_layer_set_text_color(game_name, GColorWhite);
+  text_layer_set_text(game_name, "Game: ");
+  text_layer_set_font(game_name, s_res_gothic_18);
+  layer_add_child(window_get_root_layer(s_window), (Layer *)game_name);
+
+  // game_round_label
+  game_round_label = text_layer_create(GRect(76, 4, 40, 20));
+  text_layer_set_background_color(game_round_label, GColorClear);
+  text_layer_set_text_color(game_round_label, GColorWhite);
+  text_layer_set_text(game_round_label, "Round:");
+  text_layer_set_font(game_round_label, s_res_gothic_18);
+  layer_add_child(window_get_root_layer(s_window), (Layer *)game_round_label);
+
+  // game_settings
+  game_settings = text_layer_create(GRect(8, 27, 132, 20));
+  text_layer_set_background_color(game_settings, GColorClear);
+  text_layer_set_text_color(game_settings, GColorWhite);
+  text_layer_set_text(game_settings, "Double in: NO   out: NO");
+  text_layer_set_font(game_settings, s_res_gothic_14);
+  layer_add_child(window_get_root_layer(s_window), (Layer *)game_settings);
+
+  // game_round_value
+  game_round_value = text_layer_create(GRect(115, 1, 27, 24));
+  text_layer_set_background_color(game_round_value, GColorClear);
+  text_layer_set_text_color(game_round_value, GColorWhite);
+  text_layer_set_text(game_round_value, "22");
+  text_layer_set_text_alignment(game_round_value, GTextAlignmentCenter);
+  text_layer_set_font(game_round_value, s_res_gothic_24_bold);
+  layer_add_child(window_get_root_layer(s_window), (Layer *)game_round_value);
+
+  // middle_button_text
+  middle_button_text = text_layer_create(GRect(82, 50, 59, 16));
+  text_layer_set_background_color(middle_button_text, GColorClear);
+  text_layer_set_text_color(middle_button_text, GColorWhite);
+  text_layer_set_text(middle_button_text, "");
+  text_layer_set_text_alignment(middle_button_text, GTextAlignmentRight);
+  text_layer_set_font(middle_button_text, s_res_gothic_14);
+  layer_add_child(window_get_root_layer(s_window), (Layer *)middle_button_text);
+
+}
+
+static void x01_deinit(void) {
+  window_destroy(s_window);
+}
+
+static void destroy_ui(void) {
+  window_destroy(s_window);
+  text_layer_destroy(prev_round[3]);
+  text_layer_destroy(prev_round[2]);
+  text_layer_destroy(prev_round[1]);
+  text_layer_destroy(prev_round[0]);
+  text_layer_destroy(curr_round_sum);
+  text_layer_destroy(curr_round[0]);
+  text_layer_destroy(curr_round[1]);
+  text_layer_destroy(curr_round[2]);
+  text_layer_destroy(pl[0]);
+  text_layer_destroy(pl[1]);
+  text_layer_destroy(pl[2]);
+  text_layer_destroy(pl[3]);
+  text_layer_destroy(game_name);
+  text_layer_destroy(game_round_label);
+  text_layer_destroy(game_settings);
+  text_layer_destroy(game_round_value);
+}
+// END AUTO-GENERATED UI CODE
+
+static void handle_window_unload(Window* window) {
+  destroy_ui();
+}
+
+void hide_window_ui(void) {
+  window_stack_remove(s_window, true);
 }
 
 void x01_window_push(Game *pgame) {
@@ -249,29 +452,15 @@ void x01_window_push(Game *pgame) {
   game = pgame;
   game->currentPlayer = 0;
 
-  if (!window) {
-    window = window_create();
-    window_set_click_config_provider(window, click_config_provider);
-    window_set_window_handlers(window, (WindowHandlers) {
-      .load = window_load,
-      .unload = window_unload,
+  if (!s_window) {
+    s_window = window_create();
+    initialise_ui();
+    reset_game();
+    window_set_click_config_provider(s_window, click_config_provider);
+    window_set_window_handlers(s_window, (WindowHandlers) {
+      .unload = handle_window_unload
     });
   }
   const bool animated = true;
-  window_stack_push(window, animated);
+  window_stack_push(s_window, animated);
 }
-
-static void x01_deinit(void) {
-  window_destroy(window);
-}
-
-/*
-int main(void) {
-  init();
-
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "Done initializing, pushed window: %p", window);
-
-  app_event_loop();
-  deinit();
-}
-*/
