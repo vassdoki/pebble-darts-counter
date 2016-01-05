@@ -24,7 +24,7 @@ static char t_prev_round[HISTORY_SIZE][4];
 static char t_curr_round_sum[4];
 static char t_curr_round[3][4];
 static char t_pl[4][5];
-static char t_game_name[4];
+static char t_game_name[32];
 static char t_game_round_label[32];
 static char t_game_settings[32];
 static char t_game_round_value[4];
@@ -58,6 +58,11 @@ static void vibes_veryshort_number(int count) {
   }
 }
 
+void set_text_layer_d(TextLayer *layer, char *s, int sizeofs, char *format, int d) {
+  snprintf(s, sizeofs, format, d);
+  text_layer_set_text(layer, s);
+}
+
 static void refresh_number() {
   uint8_t throwNum = game->players[game->currentPlayer].currentThrow;
 
@@ -72,11 +77,16 @@ static void refresh_number() {
     case 3: t_curr_round[throwNum][0] = 't'; break;
   }
   text_layer_set_text(curr_round[throwNum], t_curr_round[throwNum]);
-}
 
-void set_text_layer_d(TextLayer *layer, char *s, int sizeofs, char *format, int d) {
-  snprintf(s, sizeofs, format, d);
-  text_layer_set_text(layer, s);
+  GamePlayer *currentPlayer = &game->players[game->currentPlayer];
+  // before the first throw, clear out the bottom part
+  int sum = 0;
+  for(int x = 0; x < 3; x++) {
+    sum += currentPlayer->throws[game->currentRound][x].number * currentPlayer->throws[game->currentRound][x].modifier;
+  }
+  sum += currThrow.number * currThrow.modifier;
+  set_text_layer_d(curr_round_sum, t_curr_round_sum, sizeof(t_curr_round_sum), "%d", sum);
+
 }
 
 static void set_text(char *s, int sizeofs, char *format, int d) {
@@ -160,6 +170,7 @@ static void select_button_up_handler(ClickRecognizerRef recognizer, void *contex
       }
 
       text_layer_set_text(middle_button_text, "");
+      text_layer_set_text(curr_round_sum, "");
 
       currentPlayer->throws[game->currentRound][currentPlayer->currentThrow].number = currThrow.number;
       currentPlayer->throws[game->currentRound][currentPlayer->currentThrow].modifier = currThrow.modifier;
@@ -260,6 +271,7 @@ static void reset_game() {
     set_text_layer_d(pl[i], t_pl[i], sizeof(t_pl[i]), "%d", game->goalNumber);
   }
   set_text_layer_d(curr_round[0], t_curr_round[0], sizeof(t_curr_round[0]), "%d", 0);
+  set_text_layer_d(game_name, t_game_name, sizeof(t_game_name), "Game: %d", game->goalNumber);
 
   currThrow.modifier = 1;
 
@@ -278,35 +290,35 @@ static void initialise_ui(void) {
   s_res_gothic_18 = fonts_get_system_font(FONT_KEY_GOTHIC_18);
   s_res_gothic_14 = fonts_get_system_font(FONT_KEY_GOTHIC_14);
   // prev_round[3]
-  prev_round[3] = text_layer_create(GRect(2, 131, 25, 18));
+  prev_round[3] = text_layer_create(GRect(2, 131, 25, 22));
   text_layer_set_text(prev_round[3], "");
   text_layer_set_text_alignment(prev_round[3], GTextAlignmentCenter);
   text_layer_set_font(prev_round[3], s_res_gothic_18_bold);
   layer_add_child(window_get_root_layer(s_window), (Layer *)prev_round[3]);
 
   // prev_round[2]
-  prev_round[2] = text_layer_create(GRect(29, 131, 25, 18));
+  prev_round[2] = text_layer_create(GRect(29, 131, 25, 22));
   text_layer_set_text(prev_round[2], "");
   text_layer_set_text_alignment(prev_round[2], GTextAlignmentCenter);
   text_layer_set_font(prev_round[2], s_res_gothic_18_bold);
   layer_add_child(window_get_root_layer(s_window), (Layer *)prev_round[2]);
 
   // prev_round[1]
-  prev_round[1] = text_layer_create(GRect(56, 131, 25, 18));
+  prev_round[1] = text_layer_create(GRect(56, 131, 25, 22));
   text_layer_set_text(prev_round[1], "");
   text_layer_set_text_alignment(prev_round[1], GTextAlignmentCenter);
   text_layer_set_font(prev_round[1], s_res_gothic_18_bold);
   layer_add_child(window_get_root_layer(s_window), (Layer *)prev_round[1]);
 
   // prev_round[0]
-  prev_round[0] = text_layer_create(GRect(83, 131, 25, 18));
+  prev_round[0] = text_layer_create(GRect(83, 131, 25, 22));
   text_layer_set_text(prev_round[0], "");
   text_layer_set_text_alignment(prev_round[0], GTextAlignmentCenter);
   text_layer_set_font(prev_round[0], s_res_gothic_18_bold);
   layer_add_child(window_get_root_layer(s_window), (Layer *)prev_round[0]);
 
   // curr_round_sum
-  curr_round_sum = text_layer_create(GRect(110, 130, 32, 20));
+  curr_round_sum = text_layer_create(GRect(110, 130, 32, 24));
   text_layer_set_text(curr_round_sum, "");
   text_layer_set_text_alignment(curr_round_sum, GTextAlignmentCenter);
   text_layer_set_font(curr_round_sum, s_res_gothic_18_bold);
