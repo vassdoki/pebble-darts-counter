@@ -25,7 +25,6 @@ static char t_curr_round_sum[4];
 static char t_curr_round[3][4];
 static char t_pl[4][5];
 static char t_game_name[32];
-static char t_game_round_label[32];
 static char t_game_settings[32];
 static char t_game_round_value[4];
 
@@ -37,7 +36,7 @@ static AppTimer *up_button_timer;
 static AppTimer *down_button_timer;
 static AppTimer *select_button_timer;
 
-static int select_state;
+static int select_state = -1;
 
 static void vibes_veryshort_pulse() {
   static const uint32_t const segments[] = { 40 };
@@ -88,15 +87,6 @@ static void refresh_number() {
   set_text_layer_d(curr_round_sum, t_curr_round_sum, sizeof(t_curr_round_sum), "%d", sum);
 
 }
-
-static void set_text(char *s, int sizeofs, char *format, int d) {
-  snprintf(s, sizeofs, format, d);
-}
-
-static void set_text4(char *s, int sizeofs, char *format, int d1, int d2, int d3, int d4) {
-  snprintf(s, sizeofs, format, d1, d2, d3, d4);
-}
-
 
 // UP BUTTON
 static void up_button_timer_callback(void *data) {
@@ -162,13 +152,6 @@ static void select_button_up_handler(ClickRecognizerRef recognizer, void *contex
 
       currentPlayer = &game->players[game->currentPlayer];
 
-      if (game->currentPlayer == 0 && currentPlayer->currentThrow == 0 && currThrow.number == 0) {
-        // this is the first button up for the ok button, we just got to this window and received
-        // the event from the previous window
-        // just ignore it
-        break;
-      }
-
       text_layer_set_text(middle_button_text, "");
       text_layer_set_text(curr_round_sum, "");
 
@@ -215,15 +198,12 @@ static void select_button_up_handler(ClickRecognizerRef recognizer, void *contex
 
       }
 
-      //set_text(s_game_throw, sizeof(s_game_throw), "Throw: %d", currentPlayer->currentThrow + 1);
       set_text_layer_d(game_round_value, t_game_round_value, sizeof(t_game_round_value), "%d", game->currentRound + 1);
 
       currentPlayer = &game->players[game->currentPlayer];
       set_text_layer_d(curr_round[currentPlayer->currentThrow],
         t_curr_round[currentPlayer->currentThrow],
         sizeof(t_curr_round[currentPlayer->currentThrow]), "%d", 0);
-
-      //set_text(s_game_player, sizeof(s_game_player), "Player: %d", game->currentPlayer + 1);
 
       currThrow.number = 0;
       currThrow.modifier = 1;
@@ -401,7 +381,7 @@ static void initialise_ui(void) {
   game_settings = text_layer_create(GRect(8, 27, 132, 20));
   text_layer_set_background_color(game_settings, GColorClear);
   text_layer_set_text_color(game_settings, GColorWhite);
-  text_layer_set_text(game_settings, "Double in: NO   out: NO");
+  text_layer_set_text(game_settings, "");
   text_layer_set_font(game_settings, s_res_gothic_14);
   layer_add_child(window_get_root_layer(s_window), (Layer *)game_settings);
 
@@ -423,10 +403,6 @@ static void initialise_ui(void) {
   text_layer_set_font(middle_button_text, s_res_gothic_14);
   layer_add_child(window_get_root_layer(s_window), (Layer *)middle_button_text);
 
-}
-
-static void x01_deinit(void) {
-  window_destroy(s_window);
 }
 
 static void destroy_ui(void) {
@@ -464,15 +440,13 @@ void x01_window_push(Game *pgame) {
   game = pgame;
   game->currentPlayer = 0;
 
-  if (!s_window) {
-    s_window = window_create();
-    initialise_ui();
-    reset_game();
-    window_set_click_config_provider(s_window, click_config_provider);
-    window_set_window_handlers(s_window, (WindowHandlers) {
-      .unload = handle_window_unload
-    });
-  }
+  s_window = window_create();
+  initialise_ui();
+  reset_game();
+  window_set_click_config_provider(s_window, click_config_provider);
+  window_set_window_handlers(s_window, (WindowHandlers) {
+    .unload = handle_window_unload
+  });
   const bool animated = true;
   window_stack_push(s_window, animated);
 }
