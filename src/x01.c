@@ -252,6 +252,12 @@ static void reset_game() {
   }
   set_text_layer_d(curr_round[0], t_curr_round[0], sizeof(t_curr_round[0]), "%d", 0);
   set_text_layer_d(game_name, t_game_name, sizeof(t_game_name), "Game: %d", game->goalNumber);
+  char s1[4] = "Yes";
+  char s2[4] = "Yes";
+  if (!game->isDoubleIn) { strcpy(s1, "No"); }
+  if (!game->isDoubleOut) { strcpy(s2, "No"); }
+  snprintf(t_game_settings, sizeof(t_game_settings), "Double in: %s out: %s", s1, s2);
+  text_layer_set_text(game_settings, t_game_settings);
 
   currThrow.modifier = 1;
 

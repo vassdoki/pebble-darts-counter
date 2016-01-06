@@ -22,6 +22,8 @@ typedef struct {
   uint8_t currentRound; // starts at 0
   GamePlayer players[MAX_NUM_OF_PLAYERS];
   uint16_t goalNumber; // 301, 501...
+  bool isDoubleIn;
+  bool isDoubleOut;
 } Game;
 
 

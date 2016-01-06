@@ -11,7 +11,7 @@ static Window *s_main_window;
 static MenuLayer *s_menu_layer;
 
 Game *game;
-static char s_text[2][32];
+static char s_text[4][32];
 
 static uint16_t get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *context) {
   return NUM_MENU;
@@ -20,6 +20,8 @@ static uint16_t get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_in
 static void draw_row_callback(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, void *context) {
   snprintf(s_text[0], sizeof(s_text[0]), "%d", game->numOfPlayers);
   snprintf(s_text[1], sizeof(s_text[1]), "%d", game->goalNumber);
+  if (game->isDoubleIn) strcpy(s_text[2], "Yes"); else strcpy(s_text[2], "No");
+  if (game->isDoubleOut) strcpy(s_text[3], "Yes"); else strcpy(s_text[3], "No");
   switch(cell_index->row) {
     case 0:
       menu_cell_basic_draw(ctx, cell_layer, "Number of players", s_text[0], NULL);
@@ -31,10 +33,10 @@ static void draw_row_callback(GContext *ctx, const Layer *cell_layer, MenuIndex 
       menu_cell_basic_draw(ctx, cell_layer, "Starts from", s_text[1], NULL);
       break;
     case 3:
-      menu_cell_basic_draw(ctx, cell_layer, "Double in", "No", NULL);
+      menu_cell_basic_draw(ctx, cell_layer, "Double in", s_text[2], NULL);
       break;
     case 4:
-      menu_cell_basic_draw(ctx, cell_layer, "Double out", "No", NULL);
+      menu_cell_basic_draw(ctx, cell_layer, "Double out", s_text[3], NULL);
       break;
     case 5:
       menu_cell_basic_draw(ctx, cell_layer, "Start game", NULL, NULL);
@@ -67,8 +69,12 @@ static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index,
       layer_mark_dirty(menu_layer_get_layer(menu_layer));
       break;
     case 3:
+      game->isDoubleIn = !game->isDoubleIn;
+      layer_mark_dirty(menu_layer_get_layer(menu_layer));
       break;
     case 4:
+      game->isDoubleOut = !game->isDoubleOut;
+      layer_mark_dirty(menu_layer_get_layer(menu_layer));
       break;
     case 5:
       x01_window_push(game);
