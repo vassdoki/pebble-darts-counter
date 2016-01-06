@@ -36,6 +36,10 @@ static AppTimer *up_button_timer;
 static AppTimer *down_button_timer;
 static AppTimer *select_button_timer;
 
+uint8_t up_button_timer_count = 0;
+uint8_t down_button_timer_count = 0;
+uint8_t select_button_timer_count = 0;
+
 static int select_state = -1;
 
 static void vibes_veryshort_pulse() {
@@ -88,17 +92,23 @@ static void refresh_number() {
 
 }
 
-// UP BUTTON
+// UP BUTTON ****************************************************
 static void up_button_timer_callback(void *data) {
-  currThrow.number += 5;
-  refresh_number();
-  vibes_veryshort_pulse();
-  up_button_timer = app_timer_register(500, up_button_timer_callback, NULL);
+  if (up_button_timer_count <6) {
+    up_button_timer_count++;
+    currThrow.number += 5;
+    refresh_number();
+    vibes_veryshort_pulse();
+    up_button_timer = app_timer_register(500, up_button_timer_callback, NULL);
+  } else {
+    app_timer_cancel(up_button_timer);
+  }
 }
 static void up_button_down_handler(ClickRecognizerRef recognizer, void *context) {
   currThrow.number += 5;
   refresh_number();
   vibes_veryshort_pulse();
+  up_button_timer_count = 0;
   up_button_timer = app_timer_register(500, up_button_timer_callback, NULL);
 }
 static void up_button_up_handler(ClickRecognizerRef recognizer, void *context) {
@@ -106,17 +116,23 @@ static void up_button_up_handler(ClickRecognizerRef recognizer, void *context) {
   //text_layer_set_text(text_layer, "Up: +5");
 }
 
-// DOWN BUTTON
+// DOWN BUTTON ****************************************************
 static void down_button_timer_callback(void *data) {
-  currThrow.number += 1;
-  refresh_number();
-  vibes_veryshort_pulse();
-  down_button_timer = app_timer_register(500, down_button_timer_callback, NULL);
+  if (down_button_timer_count <10) {
+    down_button_timer_count++;
+    currThrow.number += 1;
+    refresh_number();
+    vibes_veryshort_pulse();
+    down_button_timer = app_timer_register(500, down_button_timer_callback, NULL);
+  } else {
+    app_timer_cancel(down_button_timer);
+  }
 }
 static void down_button_down_handler(ClickRecognizerRef recognizer, void *context) {
   currThrow.number += 1;
   refresh_number();
   vibes_veryshort_pulse();
+  down_button_timer_count = 0;
   down_button_timer = app_timer_register(500, down_button_timer_callback, NULL);
 }
 static void down_button_up_handler(ClickRecognizerRef recognizer, void *context) {
@@ -124,23 +140,28 @@ static void down_button_up_handler(ClickRecognizerRef recognizer, void *context)
   //text_layer_set_text(text_layer, "Down: +1");
 }
 
-
-// SELECT BUTTON
+// SELECT BUTTON ****************************************************
 static void select_button_timer_callback(void *data) {
-  select_state++;
-  vibes_veryshort_number(select_state + 1);
-  if (select_state < 3) {
-    select_button_timer = app_timer_register(500, select_button_timer_callback, NULL);
-  }
-  switch(select_state) {
-    case 1: text_layer_set_text(middle_button_text, "DOUBLE"); break;
-    case 2: text_layer_set_text(middle_button_text, "TRIPLE"); break;
-    case 3: text_layer_set_text(middle_button_text, "CANCEL"); break;
+  if (select_button_timer_count <4) {
+    select_button_timer_count++;
+    select_state++;
+    vibes_veryshort_number(select_state + 1);
+    if (select_state < 3) {
+      select_button_timer = app_timer_register(500, select_button_timer_callback, NULL);
+    }
+    switch(select_state) {
+      case 1: text_layer_set_text(middle_button_text, "DOUBLE"); break;
+      case 2: text_layer_set_text(middle_button_text, "TRIPLE"); break;
+      case 3: text_layer_set_text(middle_button_text, "CANCEL"); break;
+    }
+  } else {
+    app_timer_cancel(select_button_timer);
   }
 }
 static void select_button_down_handler(ClickRecognizerRef recognizer, void *context) {
   select_state = 0;
   //text_layer_set_text(text_layer, "up down");
+  select_button_timer_count = 0;
   select_button_timer = app_timer_register(500, select_button_timer_callback, NULL);
 }
 static void select_button_up_handler(ClickRecognizerRef recognizer, void *context) {
@@ -228,7 +249,7 @@ static void select_button_up_handler(ClickRecognizerRef recognizer, void *contex
   }
 }
 
-
+// SELECT BUTTON ****************************************************
 
 
 
