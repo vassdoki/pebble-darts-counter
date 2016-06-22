@@ -42,6 +42,86 @@ uint8_t select_button_timer_count = 0;
 
 static int select_state = -1;
 
+
+
+
+
+
+
+
+static void send_int(int key, int value) {
+  DictionaryIterator *iter;
+  app_message_outbox_begin(&iter);
+
+  if (!iter) {
+      APP_LOG(APP_LOG_LEVEL_DEBUG, "iter hiba");
+      return;
+    }
+
+  dict_write_int(iter, key, &value, sizeof(int), true);
+  dict_write_end(iter);
+  app_message_outbox_send();
+}
+
+static void send_game() {
+  GamePlayer *currentPlayer;
+  char *str_message;
+  char str_tmp[8] = "";
+
+
+  DictionaryIterator *iter;
+  app_message_outbox_begin(&iter);
+
+  if (!iter) {
+      APP_LOG(APP_LOG_LEVEL_DEBUG, "iter hiba");
+      return;
+  }
+
+  //APP_LOG(APP_LOG_LEVEL_DEBUG, "malloc str_message");
+  str_message = malloc(1024);
+  //APP_LOG(APP_LOG_LEVEL_DEBUG, "malloc utan");
+  for(int i = 0; i < game->numOfPlayers; i++) {
+    //APP_LOG(APP_LOG_LEVEL_DEBUG, "for 1");
+    currentPlayer = &game->players[i];
+    //APP_LOG(APP_LOG_LEVEL_DEBUG, "for 2");
+    str_message[0] = '\0';
+    //APP_LOG(APP_LOG_LEVEL_DEBUG, "for 3");
+    for(int j = 0; j < game->currentRound + 1; j++) {
+      for(int x = 0; x < 3; x++) {
+        //APP_LOG(APP_LOG_LEVEL_DEBUG, "snprintf elott i: %d j: %d x: %d", i, j, x);
+        snprintf(str_tmp, sizeof(str_tmp), "%d,%d", currentPlayer->throws[j][x].number, currentPlayer->throws[j][x].modifier);
+        str_message = strcat(str_message, str_tmp);
+        if (x < 2) {
+          str_message = strcat(str_message, "|");
+        }
+        //APP_LOG(APP_LOG_LEVEL_DEBUG, "i: %d j: %d x: %d str_message: %s", i, j, x, str_message);
+      }
+      str_message = strcat(str_message, "#");
+      //APP_LOG(APP_LOG_LEVEL_DEBUG, "str_message: %s", str_message);
+
+    }
+    //APP_LOG(APP_LOG_LEVEL_DEBUG, "dict_write_cstring: i: %d s: %s", i, str_message);
+    dict_write_cstring(iter, i, str_message);
+    //APP_LOG(APP_LOG_LEVEL_DEBUG, "dict_write utan");
+  }
+  dict_write_end(iter);
+  app_message_outbox_send();
+
+  //APP_LOG(APP_LOG_LEVEL_DEBUG, "free elott");
+  free(str_message);
+  //APP_LOG(APP_LOG_LEVEL_DEBUG, "free utan");
+
+}
+
+
+
+
+
+
+
+
+
+
 static void vibes_veryshort_pulse() {
   static const uint32_t const segments[] = { 40 };
   VibePattern pat = {
@@ -228,6 +308,7 @@ static void select_button_up_handler(ClickRecognizerRef recognizer, void *contex
 
       currThrow.number = 0;
       currThrow.modifier = 1;
+      send_game();
       //refresh_number();
       break;
     case 1:

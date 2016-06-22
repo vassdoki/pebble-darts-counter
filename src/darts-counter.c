@@ -13,6 +13,52 @@ static MenuLayer *s_menu_layer;
 Game *game;
 static char s_text[4][32];
 
+
+
+
+
+
+
+
+#define KEY_DATA 0
+
+static char s_buffer[64];
+static void inbox_received_callback(DictionaryIterator *iterator, void *context) {
+  // Get the first pair
+  Tuple *data = dict_find(iterator, KEY_DATA);
+  if (data) {
+    snprintf(s_buffer, sizeof(s_buffer), "Received '%s'", data->value->cstring);
+    APP_LOG(APP_LOG_LEVEL_ERROR, "Message received: %s", s_buffer);
+  }
+  APP_LOG(APP_LOG_LEVEL_ERROR, "Message received de if utan vagyunk");
+}
+
+static void inbox_dropped_callback(AppMessageResult reason, void *context) {
+  APP_LOG(APP_LOG_LEVEL_ERROR, "Message dropped!");
+}
+
+static void outbox_failed_callback(DictionaryIterator *iterator, AppMessageResult reason, void *context) {
+  APP_LOG(APP_LOG_LEVEL_ERROR, "Outbox send failed!");
+}
+
+static void outbox_sent_callback(DictionaryIterator *iterator, void *context) {
+  APP_LOG(APP_LOG_LEVEL_INFO, "Outbox send success!");
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 static uint16_t get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *context) {
   return NUM_MENU;
 }
@@ -108,10 +154,33 @@ static void window_unload(Window *window) {
 }
 
 static void init() {
+  app_message_register_inbox_received(inbox_received_callback);
+  app_message_register_inbox_dropped(inbox_dropped_callback);
+  app_message_register_outbox_failed(outbox_failed_callback);
+  app_message_register_outbox_sent(outbox_sent_callback);
+
+  app_message_open(128, 2048);
+
+    DictionaryIterator *iter;
+    app_message_outbox_begin(&iter);
+
+    if (!iter) {
+        APP_LOG(APP_LOG_LEVEL_DEBUG, "iter hiba");
+        return;
+      }
+
+    int key = 0;
+    int value = 12;
+    dict_write_int(iter, key, &value, sizeof(int), true);
+    dict_write_end(iter);
+    app_message_outbox_send();
+
+
   game = malloc(sizeof *game);
   game->numOfPlayers = 1;
   game->goalNumber = 301;
   s_main_window = window_create();
+
   window_set_window_handlers(s_main_window, (WindowHandlers) {
       .load = window_load,
       .unload = window_unload,
