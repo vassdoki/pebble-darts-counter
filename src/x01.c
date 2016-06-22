@@ -263,12 +263,43 @@ static void select_button_up_handler(ClickRecognizerRef recognizer, void *contex
       APP_LOG(APP_LOG_LEVEL_DEBUG, "currentPlayer: %d", game->currentPlayer);
       APP_LOG(APP_LOG_LEVEL_DEBUG, "currentThrow before: %d", currentPlayer->currentThrow);
       currentPlayer->currentThrow = (currentPlayer->currentThrow + 1) % 3;
-      APP_LOG(APP_LOG_LEVEL_DEBUG, "currentThrow: %d", currentPlayer->currentThrow);
+      APP_LOG(APP_LOG_LEVEL_DEBUG, "currentThrow: %d game goal: %d", currentPlayer->currentThrow, game->goalNumber);
+      bool nextPlayer = false;
+      bool resetRound = false;
       if (currentPlayer->currentThrow % 3 == 0) {
+        nextPlayer = true;
+      }
+      if (currentPlayer->thrownSum > game->goalNumber) {
+        // too much
+        nextPlayer = true;
+        resetRound = true;
+      }
+      if (game->isDoubleOut
+          && ((currentPlayer->thrownSum == game->goalNumber && currThrow.modifier != 2)
+                || currentPlayer->thrownSum == game->goalNumber - 1
+             )
+        ) {
+        // goal reached, but not with double or 1 is the result
+        nextPlayer = true;
+        resetRound = true;
+      }
+      if (nextPlayer) {
+        if (resetRound) {
+          APP_LOG(APP_LOG_LEVEL_DEBUG, "TOOOO MUCH");
+          // too much, reset current round
+          for (int j = 0; j < 3; j++) {
+            currentPlayer->thrownSum -=  currentPlayer->throws[game->currentRound][j].number * currentPlayer->throws[game->currentRound][j].modifier;
+            currentPlayer->throws[game->currentRound][j].number = 0;
+            currentPlayer->throws[game->currentRound][j].modifier = 1;
+            currentPlayer->currentThrow = 0;
+          }
+        }
+        // update the score of the latest player
+        set_text_layer_d(pl[game->currentPlayer], t_pl[game->currentPlayer], sizeof(t_pl[game->currentPlayer]), "%d", game->goalNumber - game->players[game->currentPlayer].thrownSum);
+
         // next player
         text_layer_set_background_color(pl[game->currentPlayer], GColorBlack);
         text_layer_set_text_color(pl[game->currentPlayer], GColorWhite);
-        set_text_layer_d(pl[game->currentPlayer], t_pl[game->currentPlayer], sizeof(t_pl[game->currentPlayer]), "%d", game->goalNumber - game->players[game->currentPlayer].thrownSum);
 
         game->currentPlayer = (game->currentPlayer + 1) % game->numOfPlayers;
         APP_LOG(APP_LOG_LEVEL_DEBUG, "currentPlayer: %d", game->currentPlayer);
@@ -299,6 +330,7 @@ static void select_button_up_handler(ClickRecognizerRef recognizer, void *contex
 
       }
 
+      set_text_layer_d(pl[game->currentPlayer], t_pl[game->currentPlayer], sizeof(t_pl[game->currentPlayer]), "%d", game->goalNumber - game->players[game->currentPlayer].thrownSum);
       set_text_layer_d(game_round_value, t_game_round_value, sizeof(t_game_round_value), "%d", game->currentRound + 1);
 
       currentPlayer = &game->players[game->currentPlayer];
