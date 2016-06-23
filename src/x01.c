@@ -173,51 +173,34 @@ static void refresh_number() {
 }
 
 // UP BUTTON ****************************************************
-static void up_button_timer_callback(void *data) {
-  if (up_button_timer_count <6) {
-    up_button_timer_count++;
-    currThrow.number += 5;
-    refresh_number();
-    vibes_veryshort_pulse();
-    up_button_timer = app_timer_register(500, up_button_timer_callback, NULL);
-  } else {
-    app_timer_cancel(up_button_timer);
-  }
-}
-static void up_button_down_handler(ClickRecognizerRef recognizer, void *context) {
+// single up button click
+static void up_button_click_handler(ClickRecognizerRef recognizer, void *context) {
+  vibes_veryshort_pulse();
   currThrow.number += 5;
   refresh_number();
-  vibes_veryshort_pulse();
-  up_button_timer_count = 0;
-  up_button_timer = app_timer_register(500, up_button_timer_callback, NULL);
 }
-static void up_button_up_handler(ClickRecognizerRef recognizer, void *context) {
-  app_timer_cancel(up_button_timer);
-  //text_layer_set_text(text_layer, "Up: +5");
+// long up button press
+static void up_button_long_press_handler(ClickRecognizerRef recognizer, void *context) {
+  vibes_veryshort_pulse();
+  currThrow.number += 19;
+  refresh_number();
+}
+static void up_button_long_release_handler(ClickRecognizerRef recognizer, void *context) {
 }
 
 // DOWN BUTTON ****************************************************
-static void down_button_timer_callback(void *data) {
-  if (down_button_timer_count <10) {
-    down_button_timer_count++;
-    currThrow.number += 1;
-    refresh_number();
-    vibes_veryshort_pulse();
-    down_button_timer = app_timer_register(500, down_button_timer_callback, NULL);
-  } else {
-    app_timer_cancel(down_button_timer);
-  }
-}
-static void down_button_down_handler(ClickRecognizerRef recognizer, void *context) {
+static void down_button_click_handler(ClickRecognizerRef recognizer, void *context) {
+  vibes_veryshort_pulse();
   currThrow.number += 1;
   refresh_number();
-  vibes_veryshort_pulse();
-  down_button_timer_count = 0;
-  down_button_timer = app_timer_register(500, down_button_timer_callback, NULL);
 }
-static void down_button_up_handler(ClickRecognizerRef recognizer, void *context) {
-  app_timer_cancel(down_button_timer);
-  //text_layer_set_text(text_layer, "Down: +1");
+// long up button press
+static void down_button_long_press_handler(ClickRecognizerRef recognizer, void *context) {
+  vibes_veryshort_pulse();
+  currThrow.number += 16;
+  refresh_number();
+}
+static void down_button_long_release_handler(ClickRecognizerRef recognizer, void *context) {
 }
 
 // SELECT BUTTON ****************************************************
@@ -367,8 +350,11 @@ static void select_button_up_handler(ClickRecognizerRef recognizer, void *contex
 
 
 static void click_config_provider(void *context) {
-  window_raw_click_subscribe(BUTTON_ID_UP, up_button_down_handler, up_button_up_handler, NULL);
-  window_raw_click_subscribe(BUTTON_ID_DOWN, down_button_down_handler, down_button_up_handler, NULL);
+  window_single_click_subscribe(BUTTON_ID_UP, up_button_click_handler);
+  window_long_click_subscribe(BUTTON_ID_UP, 400, up_button_long_press_handler, up_button_long_release_handler);
+  window_single_click_subscribe(BUTTON_ID_DOWN, down_button_click_handler);
+  window_long_click_subscribe(BUTTON_ID_DOWN, 400, down_button_long_press_handler, down_button_long_release_handler);
+
   window_raw_click_subscribe(BUTTON_ID_SELECT, select_button_down_handler, select_button_up_handler, NULL);
 }
 
