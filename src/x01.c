@@ -230,6 +230,7 @@ static void select_button_down_handler(ClickRecognizerRef recognizer, void *cont
 static void select_button_up_handler(ClickRecognizerRef recognizer, void *context) {
   GamePlayer *currentPlayer;
   app_timer_cancel(select_button_timer);
+  int currentThrowValue;
   switch(select_state) {
     case 0:
       // OK pressed
@@ -241,7 +242,9 @@ static void select_button_up_handler(ClickRecognizerRef recognizer, void *contex
 
       currentPlayer->throws[game->currentRound][currentPlayer->currentThrow].number = currThrow.number;
       currentPlayer->throws[game->currentRound][currentPlayer->currentThrow].modifier = currThrow.modifier;
-      currentPlayer->thrownSum += currThrow.number * currThrow.modifier;
+
+      currentThrowValue = currThrow.number * currThrow.modifier;
+      currentPlayer->thrownSum += currentThrowValue;
 
       APP_LOG(APP_LOG_LEVEL_DEBUG, "currentPlayer: %d", game->currentPlayer);
       APP_LOG(APP_LOG_LEVEL_DEBUG, "currentThrow before: %d", currentPlayer->currentThrow);
@@ -263,6 +266,11 @@ static void select_button_up_handler(ClickRecognizerRef recognizer, void *contex
              )
         ) {
         // goal reached, but not with double or 1 is the result
+        nextPlayer = true;
+        resetRound = true;
+      }
+      if (game->isDoubleIn && currentPlayer->thrownSum == currentThrowValue && currThrow.modifier != 2) {
+        // double in error
         nextPlayer = true;
         resetRound = true;
       }
