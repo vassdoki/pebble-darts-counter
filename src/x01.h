@@ -8,7 +8,7 @@ typedef struct {
 typedef struct {
   char initial;    // initial of the player
   bool isMe;    // is this player the owner of the watch? (plan to use it for online score keeping)
-  uint8_t currentThrow; // starts at 0
+  uint8_t currentThrow; // starts at 0, number of throws (0..2)
   uint16_t thrownSum;
   OneThrow throws[NUM_OF_MAX_ROUNDS_IN_GAME][3];
 } GamePlayer;

@@ -1,11 +1,6 @@
 #include <pebble.h>
+#include "config.h"
 #include "x01.h"
-
-#define NUM_MENU 6
-
-#define CHECKBOX_WINDOW_NUM_ROWS    4
-#define CHECKBOX_WINDOW_BOX_SIZE    12
-#define CHECKBOX_WINDOW_CELL_HEIGHT 44
 
 static Window *s_main_window;
 static MenuLayer *s_menu_layer;
@@ -13,10 +8,13 @@ static MenuLayer *s_menu_layer;
 Game *game;
 static char s_text[4][32];
 
+#define NUM_MENU 6
+#define CHECKBOX_WINDOW_CELL_HEIGHT 44
 
 #define KEY_DATA 0
 
 static char s_buffer[64];
+#if PUSH_GAME_HTTP == 1
 static void inbox_received_callback(DictionaryIterator *iterator, void *context) {
   // Get the first pair
   Tuple *data = dict_find(iterator, KEY_DATA);
@@ -24,7 +22,6 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
     snprintf(s_buffer, sizeof(s_buffer), "Received '%s'", data->value->cstring);
     APP_LOG(APP_LOG_LEVEL_ERROR, "Message received: %s", s_buffer);
   }
-  APP_LOG(APP_LOG_LEVEL_ERROR, "Message received de if utan vagyunk");
 }
 static void inbox_dropped_callback(AppMessageResult reason, void *context) {
   APP_LOG(APP_LOG_LEVEL_ERROR, "Message dropped!");
@@ -35,8 +32,7 @@ static void outbox_failed_callback(DictionaryIterator *iterator, AppMessageResul
 static void outbox_sent_callback(DictionaryIterator *iterator, void *context) {
   APP_LOG(APP_LOG_LEVEL_INFO, "Outbox send success!");
 }
-
-
+#endif
 
 static uint16_t get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *context) {
   return NUM_MENU;
@@ -133,27 +129,14 @@ static void window_unload(Window *window) {
 }
 
 static void init() {
+#if PUSH_GAME_HTTP == 1
   app_message_register_inbox_received(inbox_received_callback);
   app_message_register_inbox_dropped(inbox_dropped_callback);
   app_message_register_outbox_failed(outbox_failed_callback);
   app_message_register_outbox_sent(outbox_sent_callback);
 
   app_message_open(128, 2048);
-
-    DictionaryIterator *iter;
-    app_message_outbox_begin(&iter);
-
-    if (!iter) {
-        APP_LOG(APP_LOG_LEVEL_DEBUG, "iter hiba");
-        return;
-      }
-
-    int key = 0;
-    int value = 12;
-    dict_write_int(iter, key, &value, sizeof(int), true);
-    dict_write_end(iter);
-    app_message_outbox_send();
-
+#endif
 
   game = malloc(sizeof *game);
   game->numOfPlayers = 1;

@@ -1,4 +1,5 @@
 #include <pebble.h>
+
 void set_text_layer_d(TextLayer *layer, char *s, int sizeofs, char *format, int d) {
   snprintf(s, sizeofs, format, d);
   text_layer_set_text(layer, s);
