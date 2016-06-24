@@ -1,7 +1,4 @@
-#define NUM_OF_MAX_ROUNDS_IN_GAME 30
-#define MAX_NUM_OF_PLAYERS 4
-#define HISTORY_SIZE 4
-
+#include <x01_gui.h>
 typedef struct {
   uint8_t number; // 0: missed, 1..20, 25: bull
   uint8_t modifier; // 1: simple, 2: double, 3: tripple
