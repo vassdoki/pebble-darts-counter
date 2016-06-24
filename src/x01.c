@@ -1,6 +1,6 @@
 #include <pebble.h>
-#include <x01.h>
-#include <util_gui.h>
+#include "x01.h"
+#include "util_gui.h"
 
 static char t_curr_round[3][4];
 
@@ -62,7 +62,6 @@ static void send_game() {
   //APP_LOG(APP_LOG_LEVEL_DEBUG, "free elott");
   free(str_message);
   //APP_LOG(APP_LOG_LEVEL_DEBUG, "free utan");
-
 }
 
 

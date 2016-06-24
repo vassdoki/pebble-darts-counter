@@ -1,5 +1,5 @@
 #include <pebble.h>
-#include <x01.h>
+#include "x01.h"
 
 #define NUM_MENU 6
 
@@ -14,12 +14,6 @@ Game *game;
 static char s_text[4][32];
 
 
-
-
-
-
-
-
 #define KEY_DATA 0
 
 static char s_buffer[64];
@@ -32,30 +26,15 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
   }
   APP_LOG(APP_LOG_LEVEL_ERROR, "Message received de if utan vagyunk");
 }
-
 static void inbox_dropped_callback(AppMessageResult reason, void *context) {
   APP_LOG(APP_LOG_LEVEL_ERROR, "Message dropped!");
 }
-
 static void outbox_failed_callback(DictionaryIterator *iterator, AppMessageResult reason, void *context) {
   APP_LOG(APP_LOG_LEVEL_ERROR, "Outbox send failed!");
 }
-
 static void outbox_sent_callback(DictionaryIterator *iterator, void *context) {
   APP_LOG(APP_LOG_LEVEL_INFO, "Outbox send success!");
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

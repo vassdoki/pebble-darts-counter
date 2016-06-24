@@ -1,6 +1,6 @@
-#include <x01_gui.h>
 #include <pebble.h>
-#include <util_gui.h>
+#include "x01_gui.h"
+#include "util_gui.h"
 
 static Window *s_window;
 
