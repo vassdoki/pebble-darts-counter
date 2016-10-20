@@ -108,24 +108,44 @@ static void process_throw(void) {
   #endif
 }
 
-static void refresh_number() {
+static void refresh_throw(int throwNum, int number, int modifier) {
   static char t_curr_round[3][4];
-  uint8_t throwNum = game->players[game->currentPlayer].currentThrow;
 
-  if (currThrow.number > 20) {
-    currThrow.number = 25;
+  if (number > 20) {
+    number = 25;
     strcpy(t_curr_round[throwNum], " BU");
-    if (currThrow.modifier > 2) {
-      currThrow.modifier = 2;
+    if (modifier > 2) {
+      modifier = 2;
     }
   } else {
-    snprintf(t_curr_round[throwNum], sizeof(t_curr_round[throwNum]), " %d", currThrow.number);
+    snprintf(t_curr_round[throwNum], sizeof(t_curr_round[throwNum]), " %d", number);
   }
-  switch(currThrow.modifier) {
+  switch(modifier) {
     case 2: t_curr_round[throwNum][0] = 'd'; break;
     case 3: t_curr_round[throwNum][0] = 't'; break;
   }
   x01_gui_draw_throw(throwNum, t_curr_round[throwNum]);
+}
+
+static void refresh_number() {
+  static char t_curr_round[3][4];
+  uint8_t throwNum = game->players[game->currentPlayer].currentThrow;
+
+  refresh_throw(throwNum, currThrow.number, currThrow.modifier);
+//  if (currThrow.number > 20) {
+//    currThrow.number = 25;
+//    strcpy(t_curr_round[throwNum], " BU");
+//    if (currThrow.modifier > 2) {
+//      currThrow.modifier = 2;
+//    }
+//  } else {
+//    snprintf(t_curr_round[throwNum], sizeof(t_curr_round[throwNum]), " %d", currThrow.number);
+//  }
+//  switch(currThrow.modifier) {
+//    case 2: t_curr_round[throwNum][0] = 'd'; break;
+//    case 3: t_curr_round[throwNum][0] = 't'; break;
+//  }
+//  x01_gui_draw_throw(throwNum, t_curr_round[throwNum]);
 
   GamePlayer *currentPlayer = &game->players[game->currentPlayer];
   // before the first throw, clear out the bottom part
@@ -135,9 +155,7 @@ static void refresh_number() {
   }
   sum += currThrow.number * currThrow.modifier;
   x01_gui_draw_curr_round(sum);
-
 }
-
 
 #if PUSH_GAME_HTTP == 1
 static void send_game() {
@@ -261,6 +279,8 @@ static void select_button_up_handler(ClickRecognizerRef recognizer, void *contex
       refresh_number();
       break;
     case 4:
+      currThrow.modifier = 1;
+      currThrow.number = 0;
       currentPlayer = &game->players[game->currentPlayer];
       eraseNum = 0;
       for(int i = 0; i < 3; i++) {
@@ -328,9 +348,15 @@ static void draw_game() {
     x01_gui_draw_player_score(i, game->goalNumber - game->players[i].thrownSum);
   }
   x01_gui_draw_game_name(game->goalNumber);
+  x01_gui_draw_game_round(game->currentRound + 1);
   x01_gui_draw_game_settings_2b(game->isDoubleIn, game->isDoubleOut);
 
-  // TODO: refresh_number only draws the last throw, not the previous ones in the current round
+  for(int i = 0; i < 3; i++) {
+    if (currentPlayer->throws[game->currentRound][i].number > 0) {
+      refresh_throw(i, currentPlayer->throws[game->currentRound][i].number, currentPlayer->throws[game->currentRound][i].modifier);
+    }
+  }
+
   refresh_number();
 }
 
