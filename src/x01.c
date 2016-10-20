@@ -214,28 +214,33 @@ static void down_button_long_release_handler(ClickRecognizerRef recognizer, void
 
 // SELECT BUTTON ****************************************************
 static void select_button_timer_callback(void *data) {
-  if (select_button_timer_count <4) {
+  if (select_button_timer_count < 5) {
     select_button_timer_count++;
     select_state++;
     vibes_veryshort_number(select_state + 1);
-    if (select_state < 3) {
+    if (select_state < 4) {
       select_button_timer = app_timer_register(500, select_button_timer_callback, NULL);
     }
     switch(select_state) {
       case 1: x01_gui_draw_status("DOUBLE"); break;
       case 2: x01_gui_draw_status("TRIPLE"); break;
       case 3: x01_gui_draw_status("CANCEL"); break;
+      case 4: x01_gui_draw_status("CANCEL ROUND"); break;
     }
   } else {
     app_timer_cancel(select_button_timer);
   }
 }
+
 static void select_button_down_handler(ClickRecognizerRef recognizer, void *context) {
   select_state = 0;
   select_button_timer_count = 0;
   select_button_timer = app_timer_register(500, select_button_timer_callback, NULL);
 }
+
 static void select_button_up_handler(ClickRecognizerRef recognizer, void *context) {
+  int eraseNum;
+  GamePlayer *currentPlayer;
   app_timer_cancel(select_button_timer);
   switch(select_state) {
     case 0:
@@ -253,6 +258,21 @@ static void select_button_up_handler(ClickRecognizerRef recognizer, void *contex
     case 3:
       currThrow.modifier = 1;
       currThrow.number = 0;
+      refresh_number();
+      break;
+    case 4:
+      currentPlayer = &game->players[game->currentPlayer];
+      eraseNum = 0;
+      for(int i = 0; i < 3; i++) {
+        eraseNum += currentPlayer->throws[game->currentRound][i].number * currentPlayer->throws[game->currentRound][i].modifier;
+        currentPlayer->throws[game->currentRound][i].number = 0;
+        currentPlayer->throws[game->currentRound][i].modifier = 1;
+      }
+      currentPlayer->currentThrow = 0;
+      currentPlayer->thrownSum -= eraseNum;
+      x01_gui_draw_throw_clear_all();
+      x01_gui_draw_player_score(game->currentPlayer, game->goalNumber - game->players[game->currentPlayer].thrownSum);
+
       refresh_number();
       break;
   }

@@ -21,7 +21,8 @@ Only x01 games are implemented. You can set the game parameters:
 The up button adds 5, down button adds 1. Press select to enter the score.
 
 Double, tripple: hold the select button and release it when you have the
-right setting: double, tripple, cancel. Cancel will erase the current throw.
+right setting: double, tripple, cancel, cancel round. Cancel will erase the current throw. Cancel round will
+erase all throws in the current round.
 
 Shortcuts: to speed up entering large numbers, you can hold down up button for 19.
 Hold down down button for 16.
