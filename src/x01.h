@@ -24,7 +24,7 @@ typedef struct {
 } Game;
 
 
-void x01_window_push(Game *pgame);
+void x01_window_push(Game *pgame, int newGame);
 
 void show_window_ui(void);
 void hide_window_ui(void);

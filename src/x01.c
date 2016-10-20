@@ -288,15 +288,45 @@ static void reset_game() {
   currThrow.modifier = 1;
 }
 
+static void draw_game() {
+  x01_gui_player_on(game->currentPlayer);
+
+  GamePlayer *currentPlayer = &game->players[game->currentPlayer];
+  //draw the history
+  int histCount = 0;
+  for(int i = game->currentRound -1; i >= 0 && histCount < HISTORY_SIZE; i--) {
+    int sum = 0;
+    for(int x = 0; x < 3; x++) {
+      sum += currentPlayer->throws[i][x].number * currentPlayer->throws[i][x].modifier;
+    }
+    x01_gui_draw_prev_round(histCount, sum);
+    histCount++;
+  }
+
+  for(int i = 0; i < game->numOfPlayers; i++) {
+    // update the score of the latest player
+    x01_gui_draw_player_score(i, game->goalNumber - game->players[i].thrownSum);
+  }
+  x01_gui_draw_game_name(game->goalNumber);
+  x01_gui_draw_game_settings_2b(game->isDoubleIn, game->isDoubleOut);
+
+  // TODO: refresh_number only draws the last throw, not the previous ones in the current round
+  refresh_number();
+}
+
 void hide_window_ui(void) {
   x01_gui_hide_window_ui();
 }
 
-void x01_window_push(Game *pgame) {
-  currThrow.number = 0;
-  currThrow.modifier = 1;
-  game = pgame;
-  game->currentPlayer = 0;
+void x01_window_push(Game *pgame, int newGame) {
   x01_gui_window_push(click_config_provider);
-  reset_game();
+  if (newGame) {
+    currThrow.number = 0;
+    currThrow.modifier = 1;
+    game = pgame;
+    game->currentPlayer = 0;
+    reset_game();
+  } else {
+    draw_game();
+  }
 }

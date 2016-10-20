@@ -35,7 +35,11 @@ static void outbox_sent_callback(DictionaryIterator *iterator, void *context) {
 #endif
 
 static uint16_t get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *context) {
-  return NUM_MENU;
+  if (game->currentRound > 0) {
+    return NUM_MENU + 1;
+  } else {
+    return NUM_MENU;
+  }
 }
 
 static void draw_row_callback(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, void *context) {
@@ -61,6 +65,9 @@ static void draw_row_callback(GContext *ctx, const Layer *cell_layer, MenuIndex 
       break;
     case 5:
       menu_cell_basic_draw(ctx, cell_layer, "Start game", NULL, NULL);
+      break;
+    case 6:
+      menu_cell_basic_draw(ctx, cell_layer, "Continue game", NULL, NULL);
       break;
     default:
       break;
@@ -98,7 +105,10 @@ static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index,
       layer_mark_dirty(menu_layer_get_layer(menu_layer));
       break;
     case 5:
-      x01_window_push(game);
+      x01_window_push(game, 1);
+      break;
+    case 6:
+      x01_window_push(game, 0);
       break;
     default:
       break;
@@ -106,6 +116,7 @@ static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index,
 }
 
 static void window_load(Window *window) {
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "WINDOW LOAD");
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
 
@@ -123,6 +134,12 @@ static void window_load(Window *window) {
   });
   layer_add_child(window_layer, menu_layer_get_layer(s_menu_layer));
 }
+
+static void window_appear(Window *window) {
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "APPEAR");
+  menu_layer_reload_data(s_menu_layer);
+}
+
 
 static void window_unload(Window *window) {
   menu_layer_destroy(s_menu_layer);
@@ -146,6 +163,7 @@ static void init() {
   window_set_window_handlers(s_main_window, (WindowHandlers) {
       .load = window_load,
       .unload = window_unload,
+      .appear = window_appear
   });
   window_stack_push(s_main_window, true);
 }
