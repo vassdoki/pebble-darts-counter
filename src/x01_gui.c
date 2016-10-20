@@ -185,6 +185,15 @@ static void setup_window(void) {
   text_layer_set_font(game_settings, s_res_gothic_14);
   layer_add_child(window_get_root_layer(s_window), (Layer *)game_settings);
 
+  // middle_button_text
+  middle_button_text = text_layer_create(GRect(5, 49, 136, 16));
+  text_layer_set_background_color(middle_button_text, GColorClear);
+  text_layer_set_text_color(middle_button_text, GColorWhite);
+  text_layer_set_text(middle_button_text, "");
+  text_layer_set_text_alignment(middle_button_text, GTextAlignmentRight);
+  text_layer_set_font(middle_button_text, s_res_gothic_14);
+  layer_add_child(window_get_root_layer(s_window), (Layer *)middle_button_text);
+
   // pl[0]
   pl[0] = text_layer_create(GRect(2, 65, 34, 28));
   text_layer_set_background_color(pl[0], GColorWhite);
@@ -220,16 +229,6 @@ static void setup_window(void) {
   text_layer_set_text_alignment(pl[3], GTextAlignmentCenter);
   text_layer_set_font(pl[3], s_res_gothic_24_bold);
   layer_add_child(window_get_root_layer(s_window), (Layer *)pl[3]);
-
-  // middle_button_text
-  middle_button_text = text_layer_create(GRect(5, 50, 136, 16));
-  text_layer_set_background_color(middle_button_text, GColorClear);
-  text_layer_set_text_color(middle_button_text, GColorWhite);
-  text_layer_set_text(middle_button_text, "");
-  text_layer_set_text_alignment(middle_button_text, GTextAlignmentRight);
-  text_layer_set_font(middle_button_text, s_res_gothic_14);
-  layer_add_child(window_get_root_layer(s_window), (Layer *)middle_button_text);
-
 
   // curr_round[0]
   curr_round[0] = text_layer_create(GRect(2, 93, 45, 29));
