@@ -81,6 +81,7 @@ static int16_t get_cell_height_callback(struct MenuLayer *menu_layer, MenuIndex 
     CHECKBOX_WINDOW_CELL_HEIGHT);
 }
 
+// TODO: if the game settings are changed, then "continue game" menu should disappear
 static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
   switch(cell_index->row) {
     case 0:

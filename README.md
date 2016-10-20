@@ -39,3 +39,9 @@ Hold down down button for 16.
 * 20: hold up, up
 
 Finish with one select button.
+
+# Developer help
+
+## X01 gui functions
+
+![Game screen 2](https://raw.githubusercontent.com/vassdoki/pebble-darts-counter/master/x01_gui_h_guide.png)
