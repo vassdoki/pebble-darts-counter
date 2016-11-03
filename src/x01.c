@@ -232,11 +232,11 @@ static void down_button_long_release_handler(ClickRecognizerRef recognizer, void
 
 // SELECT BUTTON ****************************************************
 static void select_button_timer_callback(void *data) {
-  if (select_button_timer_count < 5) {
+  if (select_button_timer_count < 7) {
     select_button_timer_count++;
     select_state++;
     vibes_veryshort_number(select_state + 1);
-    if (select_state < 4) {
+    if (select_state < 6) {
       select_button_timer = app_timer_register(500, select_button_timer_callback, NULL);
     }
     switch(select_state) {
@@ -244,6 +244,8 @@ static void select_button_timer_callback(void *data) {
       case 2: x01_gui_draw_status("TRIPLE"); break;
       case 3: x01_gui_draw_status("CANCEL"); break;
       case 4: x01_gui_draw_status("CANCEL ROUND"); break;
+      case 5: x01_gui_draw_status("CANCEL ROUND"); break;
+      case 6: x01_gui_draw_status(""); break;
     }
   } else {
     app_timer_cancel(select_button_timer);
@@ -279,6 +281,7 @@ static void select_button_up_handler(ClickRecognizerRef recognizer, void *contex
       refresh_number();
       break;
     case 4:
+    case 5:
       currThrow.modifier = 1;
       currThrow.number = 0;
       currentPlayer = &game->players[game->currentPlayer];
@@ -294,6 +297,8 @@ static void select_button_up_handler(ClickRecognizerRef recognizer, void *contex
       x01_gui_draw_player_score(game->currentPlayer, game->goalNumber - game->players[game->currentPlayer].thrownSum);
 
       refresh_number();
+      break;
+    case 6:
       break;
   }
 }
