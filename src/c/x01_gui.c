@@ -136,6 +136,8 @@ void x01_gui_destroy_ui(void) {
 }
 
 static void setup_window(void) {
+  int xofs = 0;
+  int yofs = 0;
   s_window = window_create();
   window_set_background_color(s_window, GColorBlack);
 
@@ -151,9 +153,13 @@ static void setup_window(void) {
   status_bar_layer_set_separator_mode(s_status_bar, StatusBarLayerSeparatorModeDotted);
   layer_add_child(window_get_root_layer(s_window), status_bar_layer_get_layer(s_status_bar));
 
+  if (PBL_DISPLAY_WIDTH > 144) {
+      xofs = (PBL_DISPLAY_WIDTH - 144) / 2;
+  }
+  yofs = STATUS_BAR_LAYER_HEIGHT - 16;
 
   // game_name
-  game_name = text_layer_create(GRect(5, 11, 63, 20));
+  game_name = text_layer_create(GRect(xofs + 5, yofs + 11, 63, 20));
   text_layer_set_background_color(game_name, GColorClear);
   text_layer_set_text_color(game_name, GColorWhite);
   text_layer_set_text(game_name, "Game: ");
@@ -161,7 +167,7 @@ static void setup_window(void) {
   layer_add_child(window_get_root_layer(s_window), (Layer *)game_name);
 
   // game_round_label
-  game_round_label = text_layer_create(GRect(76, 11, 40, 20));
+  game_round_label = text_layer_create(GRect(xofs + 76, yofs + 11, 40, 20));
   text_layer_set_background_color(game_round_label, GColorClear);
   text_layer_set_text_color(game_round_label, GColorWhite);
   text_layer_set_text(game_round_label, "Round:");
@@ -169,16 +175,16 @@ static void setup_window(void) {
   layer_add_child(window_get_root_layer(s_window), (Layer *)game_round_label);
 
   // game_round_value
-  game_round_value = text_layer_create(GRect(115, 8, 27, 24));
+  game_round_value = text_layer_create(GRect(xofs + 115, yofs + 8, 27, 24));
   text_layer_set_background_color(game_round_value, GColorClear);
   text_layer_set_text_color(game_round_value, GColorWhite);
-  text_layer_set_text(game_round_value, "22");
+  text_layer_set_text(game_round_value, "0");
   text_layer_set_text_alignment(game_round_value, GTextAlignmentCenter);
   text_layer_set_font(game_round_value, s_res_gothic_24_bold);
   layer_add_child(window_get_root_layer(s_window), (Layer *)game_round_value);
 
   // game_settings
-  game_settings = text_layer_create(GRect(8, 33, 132, 20));
+  game_settings = text_layer_create(GRect(xofs + 8, yofs + 33, 132, 20));
   text_layer_set_background_color(game_settings, GColorClear);
   text_layer_set_text_color(game_settings, GColorWhite);
   text_layer_set_text(game_settings, "");
@@ -186,7 +192,7 @@ static void setup_window(void) {
   layer_add_child(window_get_root_layer(s_window), (Layer *)game_settings);
 
   // middle_button_text
-  middle_button_text = text_layer_create(GRect(5, 49, 136, 16));
+  middle_button_text = text_layer_create(GRect(xofs + 5, yofs + 49, 136, 16));
   text_layer_set_background_color(middle_button_text, GColorClear);
   text_layer_set_text_color(middle_button_text, GColorWhite);
   text_layer_set_text(middle_button_text, "");
@@ -195,7 +201,7 @@ static void setup_window(void) {
   layer_add_child(window_get_root_layer(s_window), (Layer *)middle_button_text);
 
   // pl[0]
-  pl[0] = text_layer_create(GRect(2, 65, 34, 28));
+  pl[0] = text_layer_create(GRect(xofs + 2, yofs + 65, 34, 28));
   text_layer_set_background_color(pl[0], GColorWhite);
   text_layer_set_text_color(pl[0], GColorBlack);
   text_layer_set_text(pl[0], "");
@@ -204,7 +210,7 @@ static void setup_window(void) {
   layer_add_child(window_get_root_layer(s_window), (Layer *)pl[0]);
 
   // pl[1]
-  pl[1] = text_layer_create(GRect(37, 65, 35, 28));
+  pl[1] = text_layer_create(GRect(xofs + 37, yofs + 65, 35, 28));
   text_layer_set_background_color(pl[1], GColorBlack);
   text_layer_set_text_color(pl[1], GColorWhite);
   text_layer_set_text(pl[1], "");
@@ -213,7 +219,7 @@ static void setup_window(void) {
   layer_add_child(window_get_root_layer(s_window), (Layer *)pl[1]);
 
   // pl[2]
-  pl[2] = text_layer_create(GRect(73, 65, 34, 28));
+  pl[2] = text_layer_create(GRect(xofs + 73, yofs + 65, 34, 28));
   text_layer_set_background_color(pl[2], GColorBlack);
   text_layer_set_text_color(pl[2], GColorWhite);
   text_layer_set_text(pl[2], "");
@@ -222,7 +228,7 @@ static void setup_window(void) {
   layer_add_child(window_get_root_layer(s_window), (Layer *)pl[2]);
 
   // pl[3]
-  pl[3] = text_layer_create(GRect(108, 65, 34, 28));
+  pl[3] = text_layer_create(GRect(xofs + 108, yofs + 65, 34, 28));
   text_layer_set_background_color(pl[3], GColorBlack);
   text_layer_set_text_color(pl[3], GColorWhite);
   text_layer_set_text(pl[3], "");
@@ -231,56 +237,56 @@ static void setup_window(void) {
   layer_add_child(window_get_root_layer(s_window), (Layer *)pl[3]);
 
   // curr_round[0]
-  curr_round[0] = text_layer_create(GRect(2, 93, 45, 29));
+  curr_round[0] = text_layer_create(GRect(xofs + 2, yofs + 93, 45, 29));
   text_layer_set_text(curr_round[0], "");
   text_layer_set_text_alignment(curr_round[0], GTextAlignmentCenter);
   text_layer_set_font(curr_round[0], s_res_gothic_28_bold);
   layer_add_child(window_get_root_layer(s_window), (Layer *)curr_round[0]);
 
   // curr_round[1]
-  curr_round[1] = text_layer_create(GRect(49, 93, 46, 29));
+  curr_round[1] = text_layer_create(GRect(xofs + 49, yofs + 93, 46, 29));
   text_layer_set_text(curr_round[1], "");
   text_layer_set_text_alignment(curr_round[1], GTextAlignmentCenter);
   text_layer_set_font(curr_round[1], s_res_gothic_28_bold);
   layer_add_child(window_get_root_layer(s_window), (Layer *)curr_round[1]);
 
   // curr_round[2]
-  curr_round[2] = text_layer_create(GRect(97, 93, 45, 29));
+  curr_round[2] = text_layer_create(GRect(xofs + 97, yofs + 93, 45, 29));
   text_layer_set_text(curr_round[2], "");
   text_layer_set_text_alignment(curr_round[2], GTextAlignmentCenter);
   text_layer_set_font(curr_round[2], s_res_gothic_28_bold);
   layer_add_child(window_get_root_layer(s_window), (Layer *)curr_round[2]);
 
   // prev_round[3]
-  prev_round[3] = text_layer_create(GRect(2, 131, 25, 22));
+  prev_round[3] = text_layer_create(GRect(xofs + 2, yofs + 131, 25, 22));
   text_layer_set_text(prev_round[3], "");
   text_layer_set_text_alignment(prev_round[3], GTextAlignmentCenter);
   text_layer_set_font(prev_round[3], s_res_gothic_18_bold);
   layer_add_child(window_get_root_layer(s_window), (Layer *)prev_round[3]);
 
   // prev_round[2]
-  prev_round[2] = text_layer_create(GRect(29, 131, 25, 22));
+  prev_round[2] = text_layer_create(GRect(xofs + 29, yofs + 131, 25, 22));
   text_layer_set_text(prev_round[2], "");
   text_layer_set_text_alignment(prev_round[2], GTextAlignmentCenter);
   text_layer_set_font(prev_round[2], s_res_gothic_18_bold);
   layer_add_child(window_get_root_layer(s_window), (Layer *)prev_round[2]);
 
   // prev_round[1]
-  prev_round[1] = text_layer_create(GRect(56, 131, 25, 22));
+  prev_round[1] = text_layer_create(GRect(xofs + 56, yofs + 131, 25, 22));
   text_layer_set_text(prev_round[1], "");
   text_layer_set_text_alignment(prev_round[1], GTextAlignmentCenter);
   text_layer_set_font(prev_round[1], s_res_gothic_18_bold);
   layer_add_child(window_get_root_layer(s_window), (Layer *)prev_round[1]);
 
   // prev_round[0]
-  prev_round[0] = text_layer_create(GRect(83, 131, 25, 22));
+  prev_round[0] = text_layer_create(GRect(xofs + 83, yofs + 131, 25, 22));
   text_layer_set_text(prev_round[0], "");
   text_layer_set_text_alignment(prev_round[0], GTextAlignmentCenter);
   text_layer_set_font(prev_round[0], s_res_gothic_18_bold);
   layer_add_child(window_get_root_layer(s_window), (Layer *)prev_round[0]);
 
   // curr_round_sum
-  curr_round_sum = text_layer_create(GRect(110, 130, 32, 24));
+  curr_round_sum = text_layer_create(GRect(xofs + 110, yofs + 130, 32, 24));
   text_layer_set_text(curr_round_sum, "");
   text_layer_set_text_alignment(curr_round_sum, GTextAlignmentCenter);
   text_layer_set_font(curr_round_sum, s_res_gothic_18_bold);
