@@ -7,6 +7,7 @@ Darts game counter for pebble smartwatch
 ![Game screen 1](https://raw.githubusercontent.com/vassdoki/pebble-darts-counter/master/pebble_screenshot_b_throws.png)
 ![Game screen 2](https://raw.githubusercontent.com/vassdoki/pebble-darts-counter/master/pebble_screenshot_c_wrong_throw.png)
 ![Game screen 3](https://raw.githubusercontent.com/vassdoki/pebble-darts-counter/master/pebble_screenshot_wrong_double_out.png)
+![Game screen 4](https://raw.githubusercontent.com/vassdoki/pebble-darts-counter/master/pebble_screenshot_results.png)
 
 
 ## Usage

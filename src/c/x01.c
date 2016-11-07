@@ -2,6 +2,7 @@
 #include "config.h"
 #include "x01.h"
 #include "util_gui.h"
+#include "x01_result.h"
 
 /** The current throw of the current player */
 static OneThrow currThrow;
@@ -57,6 +58,11 @@ static void process_throw(void) {
     nextPlayer = true;
     resetRound = true;
     x01_gui_draw_status("Wrong double in!");
+  }
+  if (currentPlayer->thrownSum == game->goalNumber) {
+    game->winner = game->currentPlayer;
+    show_x01_result(game);
+    hide_window_ui();
   }
   if (nextPlayer) {
     if (resetRound) {
@@ -204,12 +210,14 @@ static void up_button_click_handler(ClickRecognizerRef recognizer, void *context
   } else {
     currThrow.number += 5;
   }
+  if (currThrow.number > 20) currThrow.number = 25;
   refresh_number();
 }
 // long up button press
 static void up_button_long_press_handler(ClickRecognizerRef recognizer, void *context) {
   vibes_veryshort_pulse();
   currThrow.number += 19;
+  if (currThrow.number > 20) currThrow.number = 25;
   refresh_number();
 }
 static void up_button_long_release_handler(ClickRecognizerRef recognizer, void *context) {
@@ -219,12 +227,14 @@ static void up_button_long_release_handler(ClickRecognizerRef recognizer, void *
 static void down_button_click_handler(ClickRecognizerRef recognizer, void *context) {
   vibes_veryshort_pulse();
   currThrow.number += 1;
+  if (currThrow.number > 20) currThrow.number = 25;
   refresh_number();
 }
 // long up button press
 static void down_button_long_press_handler(ClickRecognizerRef recognizer, void *context) {
   vibes_veryshort_pulse();
   currThrow.number += 16;
+  if (currThrow.number > 20) currThrow.number = 25;
   refresh_number();
 }
 static void down_button_long_release_handler(ClickRecognizerRef recognizer, void *context) {
@@ -376,6 +386,7 @@ void x01_window_push(Game *pgame, int newGame) {
     currThrow.modifier = 1;
     game = pgame;
     game->currentPlayer = 0;
+    game->winner = 0;
     reset_game();
   } else {
     draw_game();

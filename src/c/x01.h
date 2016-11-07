@@ -1,3 +1,5 @@
+#pragma once
+
 #include "x01_gui.h"
 typedef struct {
   uint8_t number; // 0: missed, 1..20, 25: bull
@@ -21,6 +23,7 @@ typedef struct {
   uint16_t goalNumber; // 301, 501...
   bool isDoubleIn;
   bool isDoubleOut;
+  uint8_t winner; // 1..4 the winner of the game, or 0
 } Game;
 
 

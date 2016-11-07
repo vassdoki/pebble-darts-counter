@@ -159,6 +159,7 @@ static void init() {
   game = malloc(sizeof *game);
   game->numOfPlayers = 1;
   game->goalNumber = 301;
+  game->winner = 0;
   s_main_window = window_create();
 
   window_set_window_handlers(s_main_window, (WindowHandlers) {
