@@ -1,0 +1,26 @@
+{
+    "author": "iMind",
+    "dependencies": {},
+    "keywords": [],
+    "name": "doki-counter",
+    "pebble": {
+        "displayName": "Doki Darts Counter",
+        "enableMultiJS": false,
+        "messageKeys": {},
+        "projectType": "native",
+        "resources": {
+            "media": []
+        },
+        "sdkVersion": "3",
+        "targetPlatforms": [
+            "aplite",
+            "basalt",
+            "chalk"
+        ],
+        "uuid": "1de6e6cb-f2d4-47a7-be91-7077751acd32",
+        "watchapp": {
+            "watchface": false
+        }
+    },
+    "version": "1.0.0"
+}
