@@ -2,20 +2,30 @@
     "author": "iMind",
     "dependencies": {},
     "keywords": [],
-    "name": "doki-counter",
+    "name": "darts-score",
     "pebble": {
-        "displayName": "Doki Darts Counter",
+        "displayName": "Darts Score",
         "enableMultiJS": false,
-        "messageKeys": {},
+        "messageKeys": [],
         "projectType": "native",
         "resources": {
-            "media": []
+            "media": [
+                {
+                    "file": "images/icon48",
+                    "menuIcon": true,
+                    "name": "icon48",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                }
+            ]
         },
         "sdkVersion": "3",
         "targetPlatforms": [
             "aplite",
             "basalt",
-            "chalk"
+            "chalk",
+            "diorite",
+            "emery"
         ],
         "uuid": "1de6e6cb-f2d4-47a7-be91-7077751acd32",
         "watchapp": {
