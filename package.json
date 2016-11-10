@@ -1,36 +1,36 @@
 {
-    "author": "iMind",
-    "dependencies": {},
-    "keywords": [],
-    "name": "darts-score",
-    "pebble": {
-        "displayName": "Darts Score",
-        "enableMultiJS": false,
-        "messageKeys": [],
-        "projectType": "native",
-        "resources": {
-            "media": [
-                {
-                    "file": "images/icon48",
-                    "menuIcon": true,
-                    "name": "icon48",
-                    "targetPlatforms": null,
-                    "type": "bitmap"
-                }
-            ]
-        },
-        "sdkVersion": "3",
-        "targetPlatforms": [
-            "aplite",
-            "basalt",
-            "chalk",
-            "diorite",
-            "emery"
-        ],
-        "uuid": "1de6e6cb-f2d4-47a7-be91-7077751acd32",
-        "watchapp": {
-            "watchface": false
+  "author": "iMind",
+  "dependencies": {},
+  "keywords": [],
+  "name": "darts-score",
+  "pebble": {
+    "displayName": "Darts Score",
+    "enableMultiJS": false,
+    "messageKeys": [],
+    "projectType": "native",
+    "resources": {
+      "media": [
+        {
+          "file": "images/icon.png",
+          "menuIcon": true,
+          "name": "icon",
+          "targetPlatforms": null,
+          "type": "bitmap"
         }
+      ]
     },
-    "version": "1.0.0"
+    "sdkVersion": "3",
+    "targetPlatforms": [
+      "aplite",
+      "basalt",
+      "chalk",
+      "diorite",
+      "emery"
+    ],
+    "uuid": "1de6e6cb-f2d4-47a7-be91-7077751acd32",
+    "watchapp": {
+      "watchface": false
+    }
+  },
+  "version": "1.1.0"
 }
