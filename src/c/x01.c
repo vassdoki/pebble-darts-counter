@@ -134,7 +134,7 @@ static void refresh_throw(int throwNum, int number, int modifier) {
 }
 
 static void refresh_number() {
-  static char t_curr_round[3][4];
+//  static char t_curr_round[3][4];
   uint8_t throwNum = game->players[game->currentPlayer].currentThrow;
 
   refresh_throw(throwNum, currThrow.number, currThrow.modifier);
@@ -282,7 +282,11 @@ static void select_button_up_handler(ClickRecognizerRef recognizer, void *contex
       refresh_number();
       break;
     case 2:
-      currThrow.modifier = 3;
+      if (currThrow.number <= 20) {
+        currThrow.modifier = 3;
+      } else {
+        currThrow.modifier = 2;
+      }
       refresh_number();
       break;
     case 3:
