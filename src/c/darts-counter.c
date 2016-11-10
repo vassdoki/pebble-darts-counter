@@ -1,6 +1,7 @@
 #include <pebble.h>
 #include "config.h"
 #include "x01.h"
+#include "x01_usage.h"
 
 static Window *s_main_window;
 static MenuLayer *s_menu_layer;
@@ -8,7 +9,7 @@ static MenuLayer *s_menu_layer;
 Game *game;
 static char s_text[4][32];
 
-#define NUM_MENU 6
+#define NUM_MENU 7
 #define CHECKBOX_WINDOW_CELL_HEIGHT 44
 
 #define KEY_DATA 0
@@ -64,9 +65,12 @@ static void draw_row_callback(GContext *ctx, const Layer *cell_layer, MenuIndex 
       menu_cell_basic_draw(ctx, cell_layer, "Double out", s_text[3], NULL);
       break;
     case 5:
-      menu_cell_basic_draw(ctx, cell_layer, "Start game", NULL, NULL);
+      menu_cell_basic_draw(ctx, cell_layer, "Usage help", NULL, NULL);
       break;
     case 6:
+      menu_cell_basic_draw(ctx, cell_layer, "Start game", NULL, NULL);
+      break;
+    case 7:
       menu_cell_basic_draw(ctx, cell_layer, "Continue game", NULL, NULL);
       break;
     default:
@@ -106,9 +110,12 @@ static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index,
       layer_mark_dirty(menu_layer_get_layer(menu_layer));
       break;
     case 5:
-      x01_window_push(game, 1);
+      show_x01_usage();
       break;
     case 6:
+      x01_window_push(game, 1);
+      break;
+    case 7:
       x01_window_push(game, 0);
       break;
     default:
