@@ -145,5 +145,5 @@ void fill_result_and_stat(Game *g) {
         set_text_layer_d(s_tl_stat_i[i], t_pl[i], sizeof(t_pl[i]), "",0);
      }
   }
-  vibes_veryshort_number(3);
+  vibes_veryshort_number(3, 200, 150);
 }

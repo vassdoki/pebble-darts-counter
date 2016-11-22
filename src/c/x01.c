@@ -41,6 +41,7 @@ static void process_throw(void) {
     // too much
     nextPlayer = true;
     resetRound = true;
+    vibes_veryshort_number(4, 80, 150);
     x01_gui_draw_status("Too much!");
   }
   if (game->isDoubleOut
@@ -51,12 +52,14 @@ static void process_throw(void) {
     // goal reached, but not with double or 1 is the result
     nextPlayer = true;
     resetRound = true;
+    vibes_veryshort_number(4, 80, 150);
     x01_gui_draw_status("Wrong double out!");
   }
   if (game->isDoubleIn && currentPlayer->thrownSum == currentThrowValue && currThrow.modifier != 2 && currentThrowValue > 0) {
     // double in error
     nextPlayer = true;
     resetRound = true;
+    vibes_veryshort_number(4, 80, 150);
     x01_gui_draw_status("Wrong double in!");
   }
   if (currentPlayer->thrownSum == game->goalNumber && (!game->isDoubleOut || (game->isDoubleOut && currThrow.modifier == 2))) {
@@ -245,7 +248,7 @@ static void select_button_timer_callback(void *data) {
   if (select_button_timer_count < 7) {
     select_button_timer_count++;
     select_state++;
-    vibes_veryshort_number(select_state + 1);
+    vibes_veryshort_pulse();
     if (select_state < 6) {
       select_button_timer = app_timer_register(500, select_button_timer_callback, NULL);
     }

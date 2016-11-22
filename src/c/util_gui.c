@@ -14,13 +14,21 @@ void vibes_veryshort_pulse() {
   vibes_enqueue_custom_pattern(pat);
 }
 
-void vibes_veryshort_number(int count) {
-  static const uint32_t const segments[] = { 40, 50 };
+void vibes_veryshort_number(int count, int length, int delay) {
+  if (count > 5) {
+    count = 5;
+  }
+  static uint32_t segments[] = { 40, 90, 40, 90, 40, 90, 40, 90, 40};
+  for(int i = 0; i < count; i++) {
+    segments[i * 2] = length;
+    if (i > 0) {
+      segments[i * 2 - 1] = delay;
+    }
+  }
+
   VibePattern pat = {
     .durations = segments,
-    .num_segments = ARRAY_LENGTH(segments),
+    .num_segments = (count - 1) * 2 + 1,
   };
-  for(int i = 0; i < count; i++) {
-    vibes_enqueue_custom_pattern(pat);
-  }
+  vibes_enqueue_custom_pattern(pat);
 }
