@@ -59,7 +59,7 @@ static void process_throw(void) {
     resetRound = true;
     x01_gui_draw_status("Wrong double in!");
   }
-  if (currentPlayer->thrownSum == game->goalNumber) {
+  if (currentPlayer->thrownSum == game->goalNumber && (!game->isDoubleOut || (game->isDoubleOut && currThrow.modifier == 2))) {
     game->winner = game->currentPlayer;
     show_x01_result(game);
     hide_window_ui();
